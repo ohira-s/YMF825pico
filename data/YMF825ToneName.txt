@@ -1,0 +1,22 @@
+[
+    "EDITING",
+    "PRESET TONE1",
+    "PRESET TONE2",
+    "PR1-BOct1",
+    "Wave26",
+    "TIMBRE 5",
+    "Electronic Piano",
+    "Rose Piano",
+    "Toy Piano",
+    "Piano",
+    "Tuba",
+    "Cello",
+    "E-Piano",
+    "Bell",
+    "E-Piano2",
+    "Glockenspiel",
+    "Synth Glocken",
+    "NoName17",
+    "NoName18",
+    "NoName19"
+]

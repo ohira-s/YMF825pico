@@ -1,0 +1,262 @@
+[
+    [
+        {
+            "voice_from": 0,
+            "voice_to": 15,
+            "tone": 0,
+            "volume": 31
+        },
+        {
+            "voice_from": -1,
+            "voice_to": -1,
+            "tone": 0,
+            "volume": 0
+        },
+        {
+            "voice_from": -1,
+            "voice_to": -1,
+            "tone": 0,
+            "volume": 0
+        },
+        {
+            "voice_from": -1,
+            "voice_to": -1,
+            "tone": 0,
+            "volume": 0
+        }
+    ],
+    [
+        {
+            "voice_from": 0,
+            "voice_to": 7,
+            "tone": 0,
+            "volume": 31
+        },
+        {
+            "voice_from": 8,
+            "voice_to": 11,
+            "tone": 8,
+            "volume": 31
+        },
+        {
+            "voice_from": 12,
+            "voice_to": 13,
+            "tone": 1,
+            "volume": 31
+        },
+        {
+            "voice_from": 14,
+            "voice_to": 15,
+            "tone": 2,
+            "volume": 31
+        }
+    ],
+    [
+        {
+            "voice_from": 0,
+            "voice_to": 7,
+            "tone": 2,
+            "volume": 31
+        },
+        {
+            "voice_from": 8,
+            "voice_to": 11,
+            "tone": 1,
+            "volume": 31
+        },
+        {
+            "voice_from": 12,
+            "voice_to": 13,
+            "tone": 2,
+            "volume": 31
+        },
+        {
+            "voice_from": 14,
+            "voice_to": 15,
+            "tone": 1,
+            "volume": 31
+        }
+    ],
+    [
+        {
+            "voice_from": 0,
+            "voice_to": 7,
+            "tone": 15,
+            "volume": 31
+        },
+        {
+            "voice_from": 8,
+            "voice_to": 11,
+            "tone": 4,
+            "volume": 31
+        },
+        {
+            "voice_from": 12,
+            "voice_to": 13,
+            "tone": 10,
+            "volume": 31
+        },
+        {
+            "voice_from": 14,
+            "voice_to": 15,
+            "tone": 10,
+            "volume": 31
+        }
+    ],
+    [
+        {
+            "voice_from": 0,
+            "voice_to": 7,
+            "tone": 16,
+            "volume": 31
+        },
+        {
+            "voice_from": 8,
+            "voice_to": 11,
+            "tone": 7,
+            "volume": 0
+        },
+        {
+            "voice_from": 12,
+            "voice_to": 13,
+            "tone": 2,
+            "volume": 3
+        },
+        {
+            "voice_from": 14,
+            "voice_to": 15,
+            "tone": 1,
+            "volume": 0
+        }
+    ],
+    [
+        {
+            "voice_from": 0,
+            "voice_to": 7,
+            "tone": 15,
+            "volume": 31
+        },
+        {
+            "voice_from": 8,
+            "voice_to": 11,
+            "tone": 14,
+            "volume": 31
+        },
+        {
+            "voice_from": 12,
+            "voice_to": 13,
+            "tone": 7,
+            "volume": 15
+        },
+        {
+            "voice_from": 14,
+            "voice_to": 15,
+            "tone": 12,
+            "volume": 31
+        }
+    ],
+    [
+        {
+            "voice_from": 0,
+            "voice_to": 7,
+            "tone": 7,
+            "volume": 31
+        },
+        {
+            "voice_from": 8,
+            "voice_to": 11,
+            "tone": 6,
+            "volume": 31
+        },
+        {
+            "voice_from": 12,
+            "voice_to": 13,
+            "tone": 0,
+            "volume": 31
+        },
+        {
+            "voice_from": 14,
+            "voice_to": 15,
+            "tone": 7,
+            "volume": 31
+        }
+    ],
+    [
+        {
+            "voice_from": 0,
+            "voice_to": 3,
+            "tone": 7,
+            "volume": 31
+        },
+        {
+            "voice_from": 4,
+            "voice_to": 7,
+            "tone": 5,
+            "volume": 31
+        },
+        {
+            "voice_from": 8,
+            "voice_to": 11,
+            "tone": 8,
+            "volume": 31
+        },
+        {
+            "voice_from": 12,
+            "voice_to": 15,
+            "tone": 9,
+            "volume": 31
+        }
+    ],
+    [
+        {
+            "voice_from": 0,
+            "voice_to": 7,
+            "tone": 11,
+            "volume": 25
+        },
+        {
+            "voice_from": 8,
+            "voice_to": 11,
+            "tone": 9,
+            "volume": 31
+        },
+        {
+            "voice_from": 12,
+            "voice_to": 13,
+            "tone": 10,
+            "volume": 31
+        },
+        {
+            "voice_from": 14,
+            "voice_to": 15,
+            "tone": 8,
+            "volume": 31
+        }
+    ],
+    [
+        {
+            "voice_from": 0,
+            "voice_to": 5,
+            "tone": 4,
+            "volume": 8
+        },
+        {
+            "voice_from": 6,
+            "voice_to": 11,
+            "tone": 9,
+            "volume": 6
+        },
+        {
+            "voice_from": 12,
+            "voice_to": 13,
+            "tone": 11,
+            "volume": 8
+        },
+        {
+            "voice_from": 14,
+            "voice_to": 15,
+            "tone": 5,
+            "volume": 10
+        }
+    ]
+]
