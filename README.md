@@ -31,7 +31,9 @@ Specifications:
     Therefore ((MIDI CH + BTN) % 4) corresponds to a tone number to play.
     YMF825 chip does not support both pitch bend and modulation,
     so YMF825pico assigns original functions to these events.
+- An OLED display and 4 rotary encoders for UI to control the synthesizer. 
 - MIDI IN (DIN5) available (NOT support USB MIDI).
+- Audio output for a stereo passive speaker (but output is monoral).
     
 Edit YMF825 sound:
 - Under construction...
