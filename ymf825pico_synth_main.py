@@ -32,6 +32,7 @@
 #
 # Copyright (c) by Shunsuke Ohira
 #   00.100 2023/08/05: Play Do-Re-Mi
+#   01.000 2023/08/31: UI Editor and MIDI Keyboard are available.
 #############################################################################
 
 from ymf825pico import ymf825pico_class
@@ -45,7 +46,7 @@ UART_CH = 0
 UART_TX = 0   # GPIO No.
 UART_RX = 1   # GPIO No.
 #UART_BAUDRATE = 9600
-UART_BAUDRATE = 31250
+UART_BAUDRATE = 31250      # MIDI speed
 
 # I2C for SSD1306 OLED Display
 I2C_SSD1306_CH = 0
@@ -712,7 +713,7 @@ def on_cancel_tone_edit():
 
 
 prev_parm_hash = {}
-def reflect_tone_edit():
+def reflect_tone_edit(force_save = False):
     global YMF825pico
     global menu_main, menu_category, menu_item, menu_value, prev_parm_hash
 
@@ -726,7 +727,7 @@ def reflect_tone_edit():
                 parm_hash[pkey] = item["selected"]
 
     # Save tone parameters' data
-    if parm_hash != prev_parm_hash:
+    if force_save or parm_hash != prev_parm_hash:
         for parm in parm_hash.keys():
             print("PARM[{}] = {}".format(parm, parm_hash[parm]))
 
@@ -742,9 +743,11 @@ def reflect_tone_edit():
 
 
 def on_save_tone_edit():
-    if reflect_tone_edit():
+    print("on_save_tone_edit: IN")
+    if reflect_tone_edit(True):
         YMF825pico.save_edited_data_to_tone(menu_category)
         YMF825pico.save_tone_data()
+        print("on_save_tone_edit: DONE")
 
     on_play_demo("DEMO1")
     on_cancel_tone_edit()
@@ -896,71 +899,74 @@ def get_rotary_encoders():
             
             # MAIN
             if rte["NO"] == 0:
+                prev_menu = menu_main
                 menu_main += count
                 if menu_main < 0:
-#                    menu_main = 0
                     menu_main = len(SYNTH_MENU) - 1
                 elif menu_main >= len(SYNTH_MENU):
-#                    menu_main = len(SYNTH_MENU) - 1
                     menu_main = 0
-                else:
-                    if SYNTH_MENU[menu_main]["on_select"] is not None:
-                        SYNTH_MENU[menu_main]["on_select"](menu_main, menu_main - count)
-                        
-                    # Change menu
-                    menu_category = 0
-                    menu_item = 0
-                    print("MENU: MAIN={} CATEGORY={} ITEM={}".format(menu_main, menu_category, menu_item))
-                    print("LENG: MAIN={}".format(len(SYNTH_MENU)))
-                    print("LENG: CATEGORY={}".format(len(SYNTH_MENU[menu_main]["CATEGORY"])))
-                    print("LENG: ITEM={}".format(len(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"])))
-                    print("ITEM: SELECTED={}".format(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"]))
-                    menu_value = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"]
-                    show_menu(count)
 
-                    if SYNTH_MENU[menu_main]["on_selected"] is not None:
-                        SYNTH_MENU[menu_main]["on_selected"](menu_main, menu_main - count)
+                # on select event
+                if SYNTH_MENU[menu_main]["on_select"] is not None:
+                    SYNTH_MENU[menu_main]["on_select"](menu_main, prev_menu)
+                        
+                # Change menu
+                menu_category = 0
+                menu_item = 0
+                print("MENU: MAIN={} CATEGORY={} ITEM={}".format(menu_main, menu_category, menu_item))
+                print("LENG: MAIN={}".format(len(SYNTH_MENU)))
+                print("LENG: CATEGORY={}".format(len(SYNTH_MENU[menu_main]["CATEGORY"])))
+                print("LENG: ITEM={}".format(len(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"])))
+                print("ITEM: SELECTED={}".format(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"]))
+                menu_value = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"]
+                show_menu(count)
+
+                # on selected event
+                if SYNTH_MENU[menu_main]["on_selected"] is not None:
+                    SYNTH_MENU[menu_main]["on_selected"](menu_main, prev_menu)
 
             # CATEGORY
             elif rte["NO"] == 1:
+                prev_category = menu_category
                 menu_category += count
                 if menu_category < 0:
-#                    menu_category = 0
                     menu_category = len(SYNTH_MENU[menu_main]["CATEGORY"]) - 1
                 elif menu_category >= len(SYNTH_MENU[menu_main]["CATEGORY"]):
-#                    menu_category = len(SYNTH_MENU[menu_main]["CATEGORY"]) - 1
                     menu_category = 0
-                else:
-                    if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["on_select"] is not None:
-                        SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["on_select"](menu_category, menu_category - count)
 
-                    # Change menu
-                    menu_item = 0
-                    menu_value = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"]
-                    show_menu(count)
+                # on select event
+                if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["on_select"] is not None:
+                    SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["on_select"](menu_category, prev_category)
 
-                    if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["on_selected"] is not None:
-                        SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["on_selected"](menu_category,menu_category - count)
+                # Change menu
+                menu_item = 0
+                menu_value = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"]
+                show_menu(count)
+
+                # on selected event
+                if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["on_selected"] is not None:
+                    SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["on_selected"](menu_category, prev_category)
 
             # ITEM
             elif rte["NO"] == 2:
+                prev_item = menu_item
                 menu_item += count
                 if menu_item < 0:
-#                    menu_item = 0
                     menu_item = len(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"]) - 1
                 elif menu_item >= len(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"]):
-#                    menu_item = len(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"]) - 1
                     menu_item = 0
-                else:
-                    if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["on_select"] is not None:
-                        SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["on_select"](menu_item, menu_item - count)
 
-                    # Change menu
-                    menu_value = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"]
-                    show_menu(count)
+                # on select event
+                if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["on_select"] is not None:
+                    SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["on_select"](menu_item, prev_item)
 
-                    if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["on_selected"] is not None:
-                        SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["on_selected"](menu_item, menu_item - count)
+                # Change menu
+                menu_value = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"]
+                show_menu(count)
+
+                # on selected event
+                if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["on_selected"] is not None:
+                    SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["on_selected"](menu_item, prev_item)
 
             # VALUE
             elif rte["NO"] == 3:
@@ -981,8 +987,9 @@ def get_rotary_encoders():
 
 
 #Receive MIDI (work in a thread)
+timbre_offset = 0
 def midi_interface(midi_events, length):
-    timbre = 0
+    global timbre_offset
 
     bt = 0
     while bt < length:
@@ -992,8 +999,10 @@ def midi_interface(midi_events, length):
         left = length - bt
 
         # note on: 0x9n (n=0..f: MIDI CH)
-        if midi_cmd == 0x90:
+        if (midi_cmd & 0xf0) == 0x90:
             if left >= 2:
+                # Chanel -> Timbre
+                timbre = (midi_cmd - 0x90 + timbre_offset) % YMF825pico.TIMBRE_PORTIONS
                 # MIDI note
                 midi_note = midi_events[bt]
                 # MIDI velocity
@@ -1001,9 +1010,11 @@ def midi_interface(midi_events, length):
                 bt += 2
                 YMF825pico.play_by_timbre_note(timbre, midi_note, midi_velo)
 
-        # note off
-        elif midi_cmd == 0x80:
+        # note off: 0x8n (n=0..f: MIDI CH)
+        elif (midi_cmd & 0xf0) == 0x80:
             if left >= 2:
+                # Chanel -> Timbre
+                timbre = (midi_cmd - 0x80 + timbre_offset) % YMF825pico.TIMBRE_PORTIONS
                 # MIDI note
                 midi_note = midi_events[bt]
                 # MIDI velocity
@@ -1012,8 +1023,10 @@ def midi_interface(midi_events, length):
                 YMF825pico.stop_by_timbre_note(timbre, midi_note)
     
         # Control
-        elif midi_cmd == 0xB0:
+        elif (midi_cmd & 0xf0) == 0xb0:
             if left >= 2:
+                # Chanel -> Timbre
+                timbre = (midi_cmd - 0xb0 + timbre_offset) % YMF825pico.TIMBRE_PORTIONS
                 # MIDI note
                 midi_note = midi_events[bt]
                 # MIDI velocity
@@ -1024,88 +1037,26 @@ def midi_interface(midi_events, length):
                 if midi_note == 0x40:
                     YMF825pico.sustain_pedal(timbre, midi_velo == 0x7f)
 
-                # modulation
-                elif midi_cmd == 176 and midi_note == 1:
-                    pass
+                # modulation --> reset timbre_offset
+                elif midi_note == 0x01:
+                    timbre_offset = 0
+                    print("MIDI: Modulation")
     
-    '''
-    # pitch+ --> timbre+
-    elif midi_cmd == 224 and midi_note == 71:
-        timbre = ( timbre + 1 ) % 4
-        updated_timbre_portion(timbre)
-    
-    # pitch- --> timbre-
-    elif midi_cmd == 224 and midi_note == 57:
-        timbre = ( timbre - 1 ) % 4
-        updated_timbre_portion(timbre)
-    '''
+        elif (midi_cmd & 0xf0) == 0xe0:
+            if left >= 2:
+                # MIDI note
+                midi_note = midi_events[bt]
+                # MIDI velocity
+                midi_velo = midi_events[bt + 1]
+                bt += 2
 
-
-'''
-# Play tones with UART
-tone_kye_map = {
-    "z": ["C3", False],
-    "s": ["C3#", False],
-    "x": ["D3", False],
-    "d": ["D3#", False],
-    "c": ["E3", False],
-    "v": ["F3", False],
-    "g": ["F3#", False],
-    "b": ["G3", False],
-    "h": ["G3#", False],
-    "n": ["A3", False],
-    "j": ["A3#", False],
-    "m": ["B3", False],
-    "Z": ["C4", False],
-    "S": ["C4#", False],
-    "X": ["D4", False],
-    "D": ["D4#", False],
-    "C": ["E4", False],
-    "V": ["F4", False],
-    "G": ["F4#", False],
-    "B": ["G4", False],
-    "H": ["G4#", False],
-    "N": ["A4", False],
-    "J": ["A4#", False],
-    "M": ["B4", False]
-}
-tone_key_timbre = 0
-def all_note_off(timbre):
-    for k in tone_kye_map.keys():
-        if tone_kye_map[k][1]:
-            YMF825pico.stop_by_timbre_scale(timbre, tone_kye_map[k][0])
-            tone_kye_map[k][1] = False
-
-
-def play_tone_with_uart_keyboard(key_byte, length):
-    global tone_key_timbre
-
-    # Play tones
-    if length > 0:
-        for k in list(range(length)):
-            c = chr(key_byte[k])
-            print("KEY=", k, c)
-            if c in tone_kye_map:
-                tone = tone_kye_map[c][0]
-                if tone_kye_map[c][1] == False:
-                    YMF825pico.play_by_timbre_scale(tone_key_timbre, tone)
-                    tone_kye_map[c][1] = True
-            elif c == "0":
-                all_note_off(tone_key_timbre)
-                tone_key_timbre = 0
-            elif c == "1":
-                all_note_off(tone_key_timbre)
-                tone_key_timbre = 1
-            elif c == "2":
-                all_note_off(tone_key_timbre)
-                tone_key_timbre = 2
-            elif c == "3":
-                all_note_off(tone_key_timbre)
-                tone_key_timbre = 3
-    # All note off
-    else:
-        all_note_off(tone_key_timbre)
-'''
+                # pitch+ --> timbre+
+                if midi_note == 0x47:
+                    timbre_offset = (timbre_offset + 1) % YMF825pico.TIMBRE_PORTIONS
+            
+                # pitch- --> timbre-
+                elif midi_note == 0x39:
+                    timbre_offset = (timbre_offset - 1) % YMF825pico.TIMBRE_PORTIONS
 
 
 #Set up hardware
@@ -1200,21 +1151,6 @@ if __name__=='__main__':
         elif uart_read:
             print("UART: waiting...")
             uart_read = False
-
-        '''
-        # PC keyboard UART receive
-        length = uart.any()
-        if length > 0:
-            recv += 1
-            read_bytes = uart.read(length)
-            print("UART:[", recv, ":", length, "]=", read_bytes)
-            uart_read = True
-            play_tone_with_uart_keyboard(read_bytes, length)
-        elif uart_read:
-            print("UART: waiting...")
-            uart_read = False
-            play_tone_with_uart_keyboard([], 0)
-        '''
 
     print("QUIT.")
 
