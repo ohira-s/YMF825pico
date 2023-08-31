@@ -10,10 +10,27 @@ Installations:
 
 Quick start:
 - Connect a MIDI OUT of your MIDI instrument to a MIDI DIN5 connector of YMF825pico.
-- MIDI CH must be 0ch.
+- MIDI CH should be 0ch.
 - Connect a passive speaker or amplifire to a audio output of YMF825 board.
 - Turn on PICO.
 - Play your MIDI instrument.
 
+Specifications:
+- 7 algorithms and 4 operators FM synthesizer.
+- 29 wave forms each operator.
+- 16 voices.
+- Multi Timbre.
+    A timbre consists of 4 tones (0..3)
+    (MIDI CH % 4) corresponds to a tone number to play.
+- Note on event with verosity.
+- Sustain event pedal.
+- Pitch+ event increments the Base Tone Number (BTN).
+- Pitch- event decrements the Base Tone Number (BTN).
+- Modulation event resets the BTN to zero (default).
+    Therefore ((MIDI CH + BTN) % 4) corresponds to a tone number to play.
+    YMF825 chip does not support both pitch bend and modulation,
+    so YMF825pico assigns original functions to these events.
+- MIDI IN (DIN5) available (NOT support USB MIDI).
+    
 Edit YMF825 sound:
 - Under construction...
