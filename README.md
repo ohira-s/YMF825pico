@@ -22,6 +22,7 @@ Specifications:
 - Multi Timbre.
     A timbre consists of 4 tones (0..3)
     (MIDI CH % 4) corresponds to a tone number to play.
+- You can save 10 Timbre sets and 20 tones in PICO.
 - Note on event with verosity.
 - Sustain event pedal.
 - Pitch+ event increments the Base Tone Number (BTN).
