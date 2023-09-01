@@ -36,4 +36,4 @@ Specifications:
 - Audio output for a stereo passive speaker (but output is monoral).
     
 Edit YMF825 sound:
-- Under construction...
+- [User's Manual](https://github.com/ohira-s/YMF825pico/blob/master/doc/YMF825picoUsersManual.md)
