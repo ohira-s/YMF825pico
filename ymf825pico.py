@@ -43,6 +43,8 @@
 # Copyright (c) by Shunsuke Ohira
 #   00.600 2022/05/09: For Pi400 (original)
 #   00.100 2023/08/05: For PICO W
+#   01.000 2023/08/31: MIDI Keyboard available.
+#   01.001 2023/08/06: Databank available
 ##################################################################################
 
 from machine import Pin, SPI
@@ -271,6 +273,10 @@ class ymf825pico_class:
         self.synth_sel_voices = list(range(0,self.VOICES+1))  # Number of voices to assign each timbre portion
         self.synth_sel_volume = list(range(0,32))             # Voice volume (0..31)
 
+        # Databank number (0..9)
+        self.DATABANK_MAX = 10                                # Databank is a set of TIMBREs, TONEs and EQs
+        self.DATABANK = 0                                     # Databank is a set of TIMBREs, TONEs and EQs
+
         # Sounds (YMF825 sound parameter).
         self.TONES = 20                                  # Maximum tones
         self.PRESET_TONES = 2                            # TONE 0 and 1 is preset tones, can NOT edit
@@ -279,7 +285,7 @@ class ymf825pico_class:
         self.synth_tones = [[0,0x80 + self.VOICES]+[0]*30+[0x80,0x03,0x81,0x80]] * self.TONES
 
         # Multi-Timbre.
-        self.TIMBRES = 10                                   # Maximum timbres
+        self.TIMBRES = 20                                   # Maximum timbres
         self.TIMBRE_PORTIONS = 4                            # Maximum portions in timbre
         self.synth_play_timbre = 0                          # Playing timbre index
         self.synth_timbre_names = ["NoName"] * self.TIMBRES # Timbre names list
@@ -1065,6 +1071,7 @@ class ymf825pico_class:
     #   GLOBAL sound_param[1..35]:: tone data
 #    def set_preset_tone2( self, timbre_from=0, timbre_to=self.TIMBRE_PORTIONS-1 ):
     def set_preset_tone2( self ):
+        '''
         #HED: 0,0x81,
         ##Address
         self.sound_param[ 0]=0
@@ -1155,24 +1162,37 @@ class ymf825pico_class:
     
         self.synth_tones[2] = self.sound_param.copy()
         self.synth_tone_names[2] = "PRESET TONE2"
+        '''
+        pass
 
 
     # Set default sound parameters to YMF825.
     # Must be called to set header and trailer byte into timbre sound data list.
     def set_preset_tone01( self, tone ):
     #    sound_param = [0,0x80 + VOICES] + ([0x01,0x85,0x00,0x7F,0xF4,0xBB,0x00,0x10,0x40,0x00,0xAF,0xA0,0x0E,0x03,0x10,0x40,0x00,0x2F,0xF3,0x9B,0x00,0x20,0x41,0x00,0xAF,0xA0,0x0E,0x01,0x10,0x40]*VOICES) + [0x80,0x03,0x81,0x80]
-        self.sound_param = [0,0x80 + self.VOICES] + [0x01,0x85,0x00,0x7F,0xF4,0xBB,0x00,0x10,0x40,0x00,0xAF,0xA0,0x0E,0x03,0x10,0x40,0x00,0x2F,0xF3,0x9B,0x00,0x20,0x41,0x00,0xAF,0xA0,0x0E,0x01,0x10,0x40] + [0x80,0x03,0x81,0x80]
-        self.synth_tones[tone] = self.sound_param.copy()
+#        self.sound_param = [0,0x80 + self.VOICES] + [0x01,0x85,0x00,0x7F,0xF4,0xBB,0x00,0x10,0x40,0x00,0xAF,0xA0,0x0E,0x03,0x10,0x40,0x00,0x2F,0xF3,0x9B,0x00,0x20,0x41,0x00,0xAF,0xA0,0x0E,0x01,0x10,0x40] + [0x80,0x03,0x81,0x80]
+#        self.synth_tones[tone] = self.sound_param.copy()
         if tone == 0:
             self.synth_tone_names[tone] = "EDITING"
-        else:
-            self.synth_tone_names[tone] = "PRESET TONE" + str(tone)
+#        else:
+#            self.synth_tone_names[tone] = "PRESET TONE" + str(tone)
+
+
+    # Get the current databak number
+    def get_databank( self ):
+        return self.DATABANK
+
+
+    # Set databak number
+    def set_databank( self, databank ):
+        if 0 <= databank and databank < self.DATABANK_MAX:
+            self.DATABANK = databank
 
 
     # Load tone data.
     def load_tone_data( self ):
         try:
-            file = open( self.tone_name_file, encoding = self.file_encode )
+            file = open( self.tone_name_file.replace(".txt", str(self.DATABANK) + ".txt"), encoding = self.file_encode )
         except OSError as e:
             print(e)
         else:
@@ -1180,7 +1200,7 @@ class ymf825pico_class:
             file.close()
 
         try:
-            file = open( self.tone_param_file , encoding = self.file_encode )
+            file = open( self.tone_param_file.replace(".txt", str(self.DATABANK) + ".txt"), encoding = self.file_encode )
         except OSError as e:
             print(e)
         else:
@@ -1191,7 +1211,7 @@ class ymf825pico_class:
     # Load timbre data.
     def load_timbre_data( self ):
         try:
-            file = open( self.timbre_name_file, encoding = self.file_encode )
+            file = open( self.timbre_name_file.replace(".txt", str(self.DATABANK) + ".txt"), encoding = self.file_encode )
         except OSError as e:
             print(e)
         else:
@@ -1199,7 +1219,7 @@ class ymf825pico_class:
             file.close()
 
         try:
-            file = open( self.timbre_param_file, encoding = self.file_encode )
+            file = open( self.timbre_param_file.replace(".txt", str(self.DATABANK) + ".txt"), encoding = self.file_encode )
         except OSError as e:
             print(e)
         else:
@@ -1210,7 +1230,7 @@ class ymf825pico_class:
     # Load equalizer data.
     def load_equalizer_data( self ):
         try:
-            file = open( self.equalizer_name_file, encoding = self.file_encode )
+            file = open( self.equalizer_name_file.replace(".txt", str(self.DATABANK) + ".txt"), encoding = self.file_encode )
         except OSError as e:
             print(e)
         else:
@@ -1218,7 +1238,7 @@ class ymf825pico_class:
             file.close()
 
         try:
-            file = open( self.equalizer_param_file , encoding = self.file_encode )
+            file = open( self.equalizer_param_file.replace(".txt", str(self.DATABANK) + ".txt") , encoding = self.file_encode )
         except OSError as e:
             print(e)
         else:
@@ -1229,7 +1249,7 @@ class ymf825pico_class:
     # Save tone data.
     def save_tone_data( self, name_file = "YMF825ToneName.txt", tone_file = "YMF825ToneParm.txt", encode = "utf-8" ):
         try:
-            file = open( name_file, "w", encoding = encode )
+            file = open( name_file.replace(".txt", str(self.DATABANK) + ".txt"), "w", encoding = encode )
         except OSError as e:
             print(e)
         else:
@@ -1238,7 +1258,7 @@ class ymf825pico_class:
             file.close()
 
         try:
-            file = open( tone_file, "w", encoding = encode )
+            file = open( tone_file.replace(".txt", str(self.DATABANK) + ".txt"), "w", encoding = encode )
         except OSError as e:
             print(e)
         else:
@@ -1250,7 +1270,7 @@ class ymf825pico_class:
     # Save timbre data.
     def save_timbre_data( self, name_file = "YMF825TimbreName.txt", timbre_file = "YMF825TimbreParm.txt", encode = "utf-8" ):
         try:
-            file = open( name_file, "w", encoding = encode )
+            file = open( name_file.replace(".txt", str(self.DATABANK) + ".txt"), "w", encoding = encode )
         except OSError as e:
             print(e)
         else:
@@ -1259,7 +1279,7 @@ class ymf825pico_class:
             file.close()
 
         try:
-            file = open( timbre_file, "w", encoding = encode )
+            file = open( timbre_file.replace(".txt", str(self.DATABANK) + ".txt"), "w", encoding = encode )
         except OSError as e:
             print(e)
         else:
@@ -1271,7 +1291,7 @@ class ymf825pico_class:
     # Save equalizer data.
     def save_equalizer_data( self, name_file = "YMF825EQName.txt", equalizer_file = "YMF825EQParm.txxt", encode = "utf-8" ):
         try:
-            file = open( name_file, "w", encoding = encode )
+            file = open( name_file.replace(".txt", str(self.DATABANK) + ".txt"), "w", encoding = encode )
         except OSError as e:
             print(e)
         else:
@@ -1280,7 +1300,7 @@ class ymf825pico_class:
             file.close()
 
         try:
-            file = open( equalizer_file, "w", encoding = encode )
+            file = open( equalizer_file.replace(".txt", str(self.DATABANK) + ".txt"), "w", encoding = encode )
         except OSError as e:
             print(e)
         else:

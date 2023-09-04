@@ -33,6 +33,7 @@
 # Copyright (c) by Shunsuke Ohira
 #   00.100 2023/08/05: Play Do-Re-Mi
 #   01.000 2023/08/31: UI Editor and MIDI Keyboard are available.
+#   01.001 2023/08/06: Databank available
 #############################################################################
 
 from ymf825pico import ymf825pico_class
@@ -94,7 +95,7 @@ YMF825_PARM = [
     ("LFO", "LFO", 8, None),
     # OP1
     ("Wave Shp A", "Wave Shape1", 32, PARM_TEXT_WAVE),
-    ("Total LV A", "Total Operator Level1", 64, None),
+    ("Total LV A", "Total Operator Level1", 32, None),
     ("Feedback A", "FM Feedback Level1", 8, None),
     ("Detune   A", "Detune1", 8, None),
     ("MCM Freq A", "Multi Control Magnification Frequency1", 16, None),
@@ -112,7 +113,7 @@ YMF825_PARM = [
     ("IgnKy OF A", "Ignore Key Off1", 2, PARM_TEXT_OFF_ON),
     # OP2
     ("Wave Shp B", "Wave Shape2", 32, PARM_TEXT_WAVE),
-    ("Total LV B", "Total Operator Level2", 64, None),
+    ("Total LV B", "Total Operator Level2", 32, None),
     ("Feedback B", "FM Feedback Level2", 8, None),
     ("Detune   B", "Detune2", 8, None),
     ("MCM Freq B", "Multi Control Magnification Frequency2", 16, None),
@@ -130,7 +131,7 @@ YMF825_PARM = [
     ("IgnKy OF B", "Ignore Key Off2", 2, PARM_TEXT_OFF_ON),
     # OP3
     ("Wave Shp C", "Wave Shape3", 32, PARM_TEXT_WAVE),
-    ("Total LV C", "Total Operator Level3", 64, None),
+    ("Total LV C", "Total Operator Level3", 32, None),
     ("Feedback C", "FM Feedback Level3", 8, None),
     ("Detune   C", "Detune3", 8, None),
     ("MCM Freq C", "Multi Control Magnification Frequency3", 16, None),
@@ -148,7 +149,7 @@ YMF825_PARM = [
     ("IgnKy OF C", "Ignore Key Off3", 2, PARM_TEXT_OFF_ON),
     # OP4
     ("Wave Shp D", "Wave Shape4", 32, PARM_TEXT_WAVE),
-    ("Total LV D", "Total Operator Level4", 64, None),
+    ("Total LV D", "Total Operator Level4", 32, None),
     ("Feedback D", "FM Feedback Level4", 8, None),
     ("Detune   D", "Detune4", 8, None),
     ("MCM Freq D", "Multi Control Magnification Frequency4", 16, None),
@@ -169,6 +170,7 @@ YMF825_PARM = [
 # Character list
 CHARS_LIST= ["="]   # No change
 CHARS_LIST += [chr(ch) for ch in list(range(0x41,0x5b))]
+#CHARS_LIST += [chr(ch) for ch in list(range(0x61,0x7b))]
 CHARS_LIST += [chr(ch) for ch in list(range(0x30,0x3a))]
 CHARS_LIST += [" "]
 
@@ -183,6 +185,7 @@ menu_value = 0
 MAIN_MENU_PLAY_MANUAL = 0
 MAIN_MENU_PLAY = 0
 MAIN_MENU_PLAY_DEMO = 1
+MAIN_MENU_PLAY_DATABANK = 2
 
 # TIMBRE NAME
 MAIN_MENU_TIMBRE_NAME = 1
@@ -205,6 +208,7 @@ MAIN_MENU_TONE_COPY = 5
 # Show menu
 # move_dir: 1=down, -1=up
 def show_menu(move_dir):
+    global YMF825pico
     global menu_main, menu_category, menu_item, menu_value
 
 #    print(SYNTH_MENU)
@@ -213,10 +217,13 @@ def show_menu(move_dir):
     # Show MAIN and CATEGORY
     main_name = SYNTH_MENU[menu_main]["name"]
     category_name = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["name"]
-    if main_name == "TONE EDIT":
+    if main_name == "PLAY":
+        main_name = main_name + ":BANK=" + str(YMF825pico.get_databank())
+
+    elif main_name == "TONE EDIT":
         selected = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][1]["selected"]
         algo = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][1]["VALUE"][selected]["name"]
-        print("ALGO=", menu_main, menu_category, selected, algo)
+#        print("ALGO=", menu_main, menu_category, selected, algo)
         main_name = main_name + ":" + algo
 
     display.fill(0)
@@ -246,6 +253,7 @@ def show_menu(move_dir):
         
         # Show the current editing VALUE
         if i == menu_item:
+#            print("main, category, item, value=", menu_main, menu_category, i, menu_value)
             value_name = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["VALUE"][menu_value]["name"]
             display.hline(0, y + DISPLAY_LINE_HEIGHT - 2, DISPLAY_WIDTH, True)
         # Show the selected VALUE
@@ -263,22 +271,33 @@ def show_menu(move_dir):
 
 # Clear list memory for SYNTH_MENU
 def clear_menu_memory(prev, clear_category, clear_item, clear_value):
+    global menu_main, menu_category, menu_item, menu_value
+
     if prev < 0:
         return
 
     target_main = menu_main
     target_category = menu_category
     target_item = menu_item
+
     if clear_category:
         target_main = prev
+        menu_category = 0
+        menu_item = 0
+        menu_value = 0
+
     elif clear_item:
         target_category = prev
+        menu_item = 0
+        menu_value = 0
+
     elif clear_value:
         target_item = prev
+        menu_value = 0
         
-    print("CLEAR:", clear_category, clear_item, clear_value)
-    print("TARGET: MAIN={} CATEGORY={} ITEM={}".format(target_main, target_category, target_item))
-    print("LENGTH: CATEGORY={} ITEM={} VALUE={}".format(len(SYNTH_MENU[target_main]["CATEGORY"]), len(SYNTH_MENU[target_main]["CATEGORY"][target_category]["ITEM"]), len(SYNTH_MENU[target_main]["CATEGORY"][target_category]["ITEM"][target_item]["VALUE"])))
+#    print("CLEAR:", clear_category, clear_item, clear_value)
+#    print("TARGET: MAIN={} CATEGORY={} ITEM={}".format(target_main, target_category, target_item))
+#    print("LENGTH: CATEGORY={} ITEM={} VALUE={}".format(len(SYNTH_MENU[target_main]["CATEGORY"]), len(SYNTH_MENU[target_main]["CATEGORY"][target_category]["ITEM"]), len(SYNTH_MENU[target_main]["CATEGORY"][target_category]["ITEM"][target_item]["VALUE"])))
     if clear_value:
         del SYNTH_MENU[target_main]["CATEGORY"][target_category]["ITEM"][target_item]["VALUE"]
         SYNTH_MENU[target_main]["CATEGORY"][target_category]["ITEM"][target_item]["VALUE"] = []
@@ -294,7 +313,7 @@ def clear_menu_memory(prev, clear_category, clear_item, clear_value):
     gc.collect()
 
 
-#--- MAIN MENE: PLAY
+#--- MAIN MENU: PLAY
 # Make select play menu (PLAY)
 def make_select_play_menu(menu, prev_menu):
     global YMF825pico
@@ -304,7 +323,7 @@ def make_select_play_menu(menu, prev_menu):
     SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"] = [
         {   # MAIN_MENU_PLAY_MANUAL
             "name": "MANUAL",
-            "on_select": make_select_timbre_menu,
+            "on_select": make_select_manual_menu,
             "on_selected": None,
             "ITEM": []
         },
@@ -313,9 +332,15 @@ def make_select_play_menu(menu, prev_menu):
             "on_select": make_select_demo_menu,
             "on_selected": None,
             "ITEM": []
+        },
+        {   # MAIN_MENU_PLAY_DATABANK
+            "name": "DATABANK",
+            "on_select": make_select_databank_menu,
+            "on_selected": None,
+            "ITEM": []
         }
     ]
-    
+
     if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["on_select"] is not None:
         SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["on_select"](0, -1)
 
@@ -323,11 +348,12 @@ def make_select_play_menu(menu, prev_menu):
         SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["on_select"](0, -1)
 
     if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["VALUE"][menu_value]["on_select"] is not None:
-        SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["VALUE"][menu_value]["on_select"](0, -1)
+        SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["VALUE"][menu_value]["on_select"]()
 
 
+#--- CATEGORY MENU: MANUAL
 # Make select timbre menu (PLAY>MANUAL>timbre list>selelct)
-def make_select_timbre_menu(menu, prev_menu):
+def make_select_manual_menu(menu, prev_menu):
     global YMF825pico
 
     clear_menu_memory(prev_menu, False, True, True)
@@ -338,7 +364,7 @@ def make_select_timbre_menu(menu, prev_menu):
         SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"][MAIN_MENU_PLAY_MANUAL]["ITEM"].append({"name": tmb, "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SET", "on_select": on_select_timbre, "on_selected": None}]})
 
 
-#--- MAIN MENE: DEMO
+#--- CATEGORY MENU: DEMO
 # Make select demo menu (PLAY>MANUAL>demo list>selelct)
 def make_select_demo_menu(menu, prev_menu):
     clear_menu_memory(prev_menu, False, True, True)
@@ -349,12 +375,24 @@ def make_select_demo_menu(menu, prev_menu):
         SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"][MAIN_MENU_PLAY_DEMO]["ITEM"].append({"name": demo, "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "PLAY", "on_select": None, "on_selected": on_play_demo}]})
 
 
+#--- CATEGORY MENU: DATABANK
+# Make select databank menu (PLAY>DATABANK>0..9>selelct)
+def make_select_databank_menu(menu, prev_menu):
+    global YMF825pico
+
+    clear_menu_memory(prev_menu, False, True, True)
+
+    SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"][MAIN_MENU_PLAY_DATABANK]["ITEM"] = []
+    for databank in list(range(YMF825pico.DATABANK_MAX)):
+        SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"][MAIN_MENU_PLAY_DATABANK]["ITEM"].append({"name": str(databank), "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "LOAD", "on_select": None, "on_selected": on_change_databank}]})
+
+
 # Select a timbre on the menu
 def on_select_timbre():
     global YMF825pico
 
     # Set new timbre to YMF825pico class, then send a change timbre command to YMF825
-    print("CHANGE TIMBRE TO ", SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["name"])
+#    print("CHANGE TIMBRE TO ", SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["name"])
     YMF825pico.set_synth_play_timbre(menu_item)
     YMF825pico.set_timbre_tones(menu_item)
 
@@ -367,7 +405,7 @@ def on_play_demo(demo = None):
     if demo is None:
         demo = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["name"]
 
-    print("PLAY DEMO=", demo)
+#    print("PLAY DEMO=", demo)
     if demo == "DEMO1":
         YMF825pico.play_by_timbre_scale(0,"C4")
         YMF825pico.delay(500)
@@ -425,7 +463,31 @@ def on_play_demo(demo = None):
         YMF825pico.stop_by_timbre_scale(1,"C5")
 
 
-#--- MAIN MENE: TIMBRE NAME
+def on_change_databank():
+    global YMF825pico
+
+    databank = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["name"]
+    YMF825pico.set_databank(menu_item)
+#    print("LOAD DATABANK=", YMF825pico.get_databank(), "/", databank)
+
+    # Load tone data
+    YMF825pico.load_tone_data()
+
+    # load timbre data
+    YMF825pico.load_timbre_data()
+
+    # load equalizer data
+    YMF825pico.load_equalizer_data()
+    
+    # Set a default tone
+    YMF825pico.set_preset_tone01( 1 )
+
+    menu_value = 0
+    make_select_databank_menu(menu_category, menu_category)
+    show_menu(1)
+
+
+#--- MAIN MENU: TIMBRE NAME
 # Make edit timbre name menu (TIMBRE>timbre list>timbre name>selelct)
 def make_edit_timbre_name_menu(menu, prev_menu):
     global YMF825pico
@@ -477,7 +539,7 @@ def on_save_timbre_name():
         ch = CHARS_LIST[SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["selected"]]
         name += ch if ch != CHARS_LIST[0] else SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["name"]
 
-    print("CHANGE TIMBRE NAME[{}]={}".format(menu_category, name))
+#    print("CHANGE TIMBRE NAME[{}]={}".format(menu_category, name))
     YMF825pico.rename_timbre(menu_category, name)
 
     # Save tone data
@@ -488,7 +550,7 @@ def on_save_timbre_name():
     on_cancel_timbre_name()
 
 
-#--- MAIN MENE: TIMBRE EDIT
+#--- MAIN MENU: TIMBRE EDIT
 # Make timbre edit menu
 def make_edit_timbre_edit_menu(menu, prev_menu):
     global YMF825pico
@@ -509,7 +571,7 @@ def make_edit_timbre_edit_menu(menu, prev_menu):
         values_volume.append({"name": str(volume), "on_select": on_change_timbre_edit, "on_selected": None})
 
     timbre_list = YMF825pico.get_synth_timbre_names()
-    print("TIMBER LIST:", timbre_list)
+#    print("TIMBER LIST:", timbre_list)
     SYNTH_MENU[MAIN_MENU_TIMBRE_EDIT]["CATEGORY"] = []
     timbre_id = 0
     for timbre in timbre_list:
@@ -549,7 +611,7 @@ def on_save_timbre_edit():
     global menu_main, menu_category, menu_item, menu_value
 
     # Change the current timbre settings
-    print("CHANGE TIMBRE SETTINGS[{}]".format(menu_category))
+#    print("CHANGE TIMBRE SETTINGS[{}]".format(menu_category))
     for portion in list(range(YMF825pico.TIMBRE_PORTIONS)):
         i = portion * 4
         tone = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["selected"]
@@ -567,7 +629,7 @@ def on_save_timbre_edit():
     on_cancel_timbre_edit()
 
 
-#--- MAIN MENE: TONE NAME
+#--- MAIN MENU: TONE NAME
 # Make edit tone name menu (TONE>tone list>tone name>selelct)
 def make_edit_tone_name_menu(menu, prev_menu):
     global YMF825pico
@@ -625,7 +687,7 @@ def on_save_tone_name():
         ch = CHARS_LIST[SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["selected"]]
         name += ch if ch != CHARS_LIST[0] else SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["name"]
 
-    print("CHANGE TONE NAME[{}]={}".format(menu_category, name))
+#    print("CHANGE TONE NAME[{}]={}".format(menu_category, name))
     YMF825pico.rename_tone(menu_category, name)
 
     # Save tone data
@@ -636,7 +698,7 @@ def on_save_tone_name():
     on_cancel_tone_name()
 
 
-#--- MAIN MENE: TONE EDIT
+#--- MAIN MENU: TONE EDIT
 # Make edit tone edit menu (TONE EDIT>tone list>parameter name>selelct)
 def make_edit_tone_edit_menu(menu, prev_menu):
     global YMF825pico
@@ -645,15 +707,10 @@ def make_edit_tone_edit_menu(menu, prev_menu):
 
     tone_list = YMF825pico.get_synth_tone_names()
     SYNTH_MENU[MAIN_MENU_TONE_EDIT]["CATEGORY"] = []
-#    tone_id = 0
     for tone in tone_list:
-        item = []
+        SYNTH_MENU[MAIN_MENU_TONE_EDIT]["CATEGORY"].append({"name": tone, "on_select": on_select_tone_edit_tone, "on_selected": None, "ITEM": None})
 
-        item.append({"name": "SAVE",   "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_save_tone_edit, "on_selected": None}]})
-        item.append({"name": "CANCEL", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_cancel_tone_edit, "on_selected": None}]})
-
-        SYNTH_MENU[MAIN_MENU_TONE_EDIT]["CATEGORY"].append({"name": tone, "on_select": on_select_tone_edit_tone, "on_selected": None, "ITEM": item})
-#        tone_id += 1
+    SYNTH_MENU[MAIN_MENU_TONE_EDIT]["CATEGORY"][menu_category]["on_select"](menu_item, -1)
 
 
 # Make tone editor menu
@@ -661,25 +718,38 @@ def on_select_tone_edit_tone(menu, prev_menu):
     global YMF825pico
 
     # Remake ITEM>VALUE menu
-    print("MENU={} CLEAR PREV={}".format(menu, prev_menu))
+#    print("MENU={} CLEAR PREV={}".format(menu, prev_menu))
     clear_menu_memory(prev_menu, False, True, True)
 
     # Get tone data for editing
     tone_hash = YMF825pico.copy_tone_data_for_edit(menu_category)
-    print("TONE HASH[{}]:".format(menu_category))
+#    print("TONE HASH[{}]:".format(menu_category))
 
     values_parm = []
-    for num in list(range(64)):
+    for num in list(range(32)):
         values_parm.append({"name": str(num), "on_select": on_change_tone_parm, "on_selected": None})
         
     item = []
     for parm_def in YMF825_PARM:
         parm = parm_def[0]        
-        print("PARM[{}/{}] = {}".format(parm, parm_def[1], tone_hash[parm_def[1]]))
+#        print("PARM[{}/{}] = {}".format(parm, parm_def[1], tone_hash[parm_def[1]]))
         if parm_def[3] is None:
             item.append({"name": parm, "on_select": on_select_tone_parm, "on_selected": None, "selected": tone_hash[parm_def[1]], "VALUE": values_parm[0:parm_def[2]]})
         else:
             item.append({"name": parm, "on_select": on_select_tone_parm, "on_selected": None, "selected": tone_hash[parm_def[1]], "VALUE": [{"name": nm, "on_select": on_change_tone_parm, "on_selected": None} for nm in parm_def[3]]})
+
+    item.append({"name": "CPadsl A>B", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_copy_adssl, "on_selected": None}]})
+    item.append({"name": "CPadsl A>C", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_copy_adssl, "on_selected": None}]})
+    item.append({"name": "CPadsl A>D", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_copy_adssl, "on_selected": None}]})
+    item.append({"name": "CPadsl B>A", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_copy_adssl, "on_selected": None}]})
+    item.append({"name": "CPadsl B>C", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_copy_adssl, "on_selected": None}]})
+    item.append({"name": "CPadsl B>D", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_copy_adssl, "on_selected": None}]})
+    item.append({"name": "CPadsl C>A", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_copy_adssl, "on_selected": None}]})
+    item.append({"name": "CPadsl C>B", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_copy_adssl, "on_selected": None}]})
+    item.append({"name": "CPadsl C>D", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_copy_adssl, "on_selected": None}]})
+    item.append({"name": "CPadsl D>A", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_copy_adssl, "on_selected": None}]})
+    item.append({"name": "CPadsl D>B", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_copy_adssl, "on_selected": None}]})
+    item.append({"name": "CPadsl D>C", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_copy_adssl, "on_selected": None}]})
 
     item.append({"name": "SAVE",   "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_save_tone_edit, "on_selected": None}]})
     item.append({"name": "CANCEL", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_cancel_tone_edit, "on_selected": None}]})
@@ -742,15 +812,32 @@ def reflect_tone_edit(force_save = False):
         return False
 
 
+# Save the all tone data to the current databank
 def on_save_tone_edit():
-    print("on_save_tone_edit: IN")
     if reflect_tone_edit(True):
         YMF825pico.save_edited_data_to_tone(menu_category)
         YMF825pico.save_tone_data()
-        print("on_save_tone_edit: DONE")
 
     on_play_demo("DEMO1")
     on_cancel_tone_edit()
+
+
+# Copy ADSL 71..82 (A>B=71 adssl=8..12)
+def on_copy_adssl():
+    base = menu_item - 71
+    copy_from = int(base / 3)
+    copy_to = base % 3
+    if copy_to >= copy_from:
+        copy_to += 1
+
+#    print("COPY ADSSL:", copy_from, copy_to)
+    copy_from = 3 + copy_from * 17 + 5
+    copy_to = 3 + copy_to * 17 + 5
+#    print("COPY ADSSL:", copy_from, copy_to)
+    adssl = 0
+    while adssl <= 4:
+        SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][copy_to]["selected"] = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][copy_from]["selected"]
+        adssl += 1
 
 
 #--- MAIN MENU: TONE COPY
@@ -763,12 +850,9 @@ def make_edit_tone_copy_menu(menu, prev_menu):
     tone_list = YMF825pico.get_synth_tone_names()
     SYNTH_MENU[MAIN_MENU_TONE_COPY]["CATEGORY"] = []
     for tone in tone_list:
-        item = []
+        SYNTH_MENU[MAIN_MENU_TONE_COPY]["CATEGORY"].append({"name": tone, "on_select": on_select_tone_copy_tone, "on_selected": None, "ITEM": None})
 
-        item.append({"name": "SAVE",   "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_save_tone_edit, "on_selected": None}]})
-        item.append({"name": "CANCEL", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_cancel_tone_edit, "on_selected": None}]})
-
-        SYNTH_MENU[MAIN_MENU_TONE_COPY]["CATEGORY"].append({"name": tone, "on_select": on_select_tone_copy_tone, "on_selected": None, "ITEM": item})
+    SYNTH_MENU[MAIN_MENU_TONE_COPY]["CATEGORY"][menu_category]["on_select"](menu_item, -1)
 
 
 # Make copy target tone list as the item list
@@ -797,11 +881,11 @@ def on_change_copy_parm():
     global YMF825pico
     global menu_main, menu_category, menu_item, menu_value, prev_parm_hash
 
-    print("Copy tone {} to {}.".format(menu_category, menu_item))
+#    print("Copy tone {} to {}.".format(menu_category, menu_item))
     if menu_category != menu_item:
         # Get tone data for editing
         tone_hash = YMF825pico.copy_tone_data_for_edit(menu_category)
-        print("TONE HASH[{}]:".format(menu_category))
+#        print("TONE HASH[{}]:".format(menu_category))
         YMF825pico.set_editing_tone(tone_hash)
         YMF825pico.save_edited_data_to_tone(menu_item)
 
@@ -815,7 +899,7 @@ SYNTH_MENU = [
         "CATEGORY": [
             {   # MAIN_MENU_PLAY_MANUAL
                 "name": "MANUAL",
-                "on_select": make_select_timbre_menu,
+                "on_select": make_select_manual_menu,
                 "on_selected": None,
                 "ITEM": []
             },
@@ -913,11 +997,11 @@ def get_rotary_encoders():
                 # Change menu
                 menu_category = 0
                 menu_item = 0
-                print("MENU: MAIN={} CATEGORY={} ITEM={}".format(menu_main, menu_category, menu_item))
-                print("LENG: MAIN={}".format(len(SYNTH_MENU)))
-                print("LENG: CATEGORY={}".format(len(SYNTH_MENU[menu_main]["CATEGORY"])))
-                print("LENG: ITEM={}".format(len(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"])))
-                print("ITEM: SELECTED={}".format(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"]))
+#                print("MENU: MAIN={} CATEGORY={} ITEM={}".format(menu_main, menu_category, menu_item))
+#                print("LENG: MAIN={}".format(len(SYNTH_MENU)))
+#                print("LENG: CATEGORY={}".format(len(SYNTH_MENU[menu_main]["CATEGORY"])))
+#                print("LENG: ITEM={}".format(len(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"])))
+#                print("ITEM: SELECTED={}".format(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"]))
                 menu_value = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"]
                 show_menu(count)
 
@@ -1059,10 +1143,8 @@ def midi_interface(midi_events, length):
                     timbre_offset = (timbre_offset - 1) % YMF825pico.TIMBRE_PORTIONS
 
 
-#Set up hardware
-def setup():
-    print("setup.")
-
+#Set up this module
+def setup_module():
     # Menu initialize
     if SYNTH_MENU[menu_main]["on_select"] is not None:
         SYNTH_MENU[menu_main]["on_select"](0, -1)
@@ -1076,10 +1158,8 @@ def setup():
     if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["VALUE"][menu_value]["on_select"] is not None:
         SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["VALUE"][menu_value]["on_select"](0, -1)
 
-    print("setup end.")
 
-
-#Initialize application
+#Initialize the application
 def init():
     global display
     
@@ -1087,9 +1167,9 @@ def init():
 
     # SSD1306 setup
     addr = i2c_ssd1306.scan()
-    print("SSD1306 ADDRESS=" + hex(addr[0]))
+#    print("SSD1306 ADDRESS=" + hex(addr[0]))
     display = ssd1306.SSD1306_I2C(DISPLAY_WIDTH, DISPLAY_HEIGHT, i2c_ssd1306)
-    print("SSD1306 display=", display)
+#    print("SSD1306 display=", display)
     display.contrast(128)
     display.fill(0)
     display.text("YMF825pico", 25, 20, True)
@@ -1117,13 +1197,13 @@ if __name__=='__main__':
     # YMF825
     YMF825pico = ymf825pico_class()
     init()
-    setup()
 
     # YMF825 control class
     print("YMF825 PICO CLASS")
     YMF825pico.turn_on_synthesizer()
     YMF825pico.setup_synth()
 
+    setup_module()
     YMF825pico.play_demo()
 
     show_menu(1)
