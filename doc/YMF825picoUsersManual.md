@@ -122,6 +122,19 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         |                 | PLAY   | Play this demo. |
 
 
+- ## **Category: DATABANK (PLAY > DATABANK)**
+  Load a dataset from a databank.
+
+    - ### **Item:** ***demo list***
+        The demo music names are listed in the Item area.
+
+    - #### **Items and Values**
+        | Items           | Values | Descriptions |
+        | --------------- | ------ | ------------ |
+        | ***0..9***      | NO     | Nothing happens. |
+        |                 | LOAD   | Load this dataset. |
+
+
 # **Main: TIMBRE NAME**
 - ## **Category:** ***timbre list*** (TIMBRE NAME > ***timbre list***)
   Choose a timbre name to edit it.
@@ -282,9 +295,45 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         | Key S EN D      | OFF / ON   | Operator-D key scale sensitivity. |
         | Key S LV D      | 0..3       | Operator-D key scale level sensivitiy. |
         | IgnKy OF D      | OFF / ON   | Operator-D ignore key off. |
+        | CPadsl A>B      | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Copy ADSSL-A to B. |
+        | CPadsl A>C      | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Copy ADSSL-A to C. |
+        | CPadsl A>D      | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Copy ADSSL-A to D. |
+        | CPadsl B>A      | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Copy ADSSL-B to A. |
+        | CPadsl B>C      | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Copy ADSSL-B to C. |
+        | CPadsl B>D      | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Copy ADSSL-B to D. |
+        | CPadsl C>A      | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Copy ADSSL-C to A. |
+        | CPadsl C>B      | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Copy ADSSL-C to B. |
+        | CPadsl C>D      | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Copy ADSSL-C to D. |
+        | CPadsl D>A      | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Copy ADSSL-D to A. |
+        | CPadsl D>B      | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Copy ADSSL-D to B. |
+        | CPadsl D>C      | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Copy ADSSL-D to C. |
         | SAVE            | NO         | Nothing happens. |
         |                 | SURE?      | Nothing happens. |
-        |                 | YES        | Save the changes. |
+        |                 | YES        | Save the changes to PICO. |
         | CANCEL          | NO         | Nothing happens. |
         |                 | SURE?      | Nothing happens. |
         |                 | YES        | Cancel the changes. |
