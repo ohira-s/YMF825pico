@@ -126,7 +126,7 @@ An OLED display shows you the menus and the values.  THe layout is as below.
   Load a dataset from a databank.
 
     - ### **Item:** ***demo list***
-        The demo music names are listed in the Item area.
+        Numbers of the databank (0..9) are listed in the Item area.
 
     - #### **Items and Values**
         | Items           | Values | Descriptions |
