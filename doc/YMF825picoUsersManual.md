@@ -1,33 +1,45 @@
-# **YMF825pico Speciffications**
+# **YMF825pico User's Manual**
 ## Sound
-	- FM synthesizer with 7 algorithms and 4 operators (A, B, C, D).
-	- 29 wave forms each operator.
-	- 16 voices.  Each voice can have different tone.
-	- Multi Timbre. A timbre consists of 4 tones (0..3).
-        (MIDI Channel % 4) corresponds to a tone number to play.
-	- You can save 10 Timbre sets and 20 tones in PICO.
-## Controles
-	- Note on event with MIDI channel and verosity.
-	- Note off event with MIDI channel.
-	- Sustain event pedal.
-	- Pitch+ event increments the Base Tone Number (BTN).
-	- Pitch- event decrements the Base Tone Number (BTN).
-	- Modulation event resets the BTN to zero (default).
-        Therefore (MIDI Channel + BTN) % 4 corresponds to a tone number to play. YMF825 chip does not support both pitch bend and modulation, so YMF825pico assigns original functions to these events.
+- FM synthesizer with 7 algorithms and 4 operators (A, B, C, D).
+- 29 wave forms each operator.
+- 16 voices.  Each voice can have different tone.
+- Multi Timbre. A timbre consists of 4 tones (0..3).
+
+  (MIDI Channel + 1) % 4 corresponds to a tone number to play.
+- You can save 10 Timbre sets and 20 tones in PICO.
+
+    MIDI CH1 ---> TIMBREx-PORTION0 ---> TONE0..19 / VOICES0..15 / VOLUME0..31
+
+    MIDI CH2 ---> TIMBREx-PORTION1 ---> TONE0..19 / VOICES0..15 / VOLUME0..31
+
+    MIDI CH3 ---> TIMBREx-PORTION2 ---> TONE0..19 / VOICES0..15 / VOLUME0..31
+
+    MIDI CH4 ---> TIMBREx-PORTION3 ---> TONE0..19 / VOICES0..15 / VOLUME0..31
+
+## MIDI Controles
+- Note on event with MIDI channel and verosity.
+- Note off event with MIDI channel.
+- Sustain event pedal.
+- Pitch+ event increments the Base Tone Number (BTN).
+- Pitch- event decrements the Base Tone Number (BTN).
+- Modulation event resets the BTN to zero (default).
+
+  Therefore (MIDI Channel + BTN + 1) % 4 corresponds to a tone number to play. YMF825 chip does not support both pitch bend and modulation, so YMF825pico assigns original functions to these events.
 
 ## Interfaces
-	- An OLED display and 4 rotary encoders for UI to control the synthesizer.
-	- MIDI IN (DIN5) available (NOT support USB MIDI).
-	- Audio output for a stereo passive speaker (but output is monoral).
+- An OLED display and 4 rotary encoders for UI to control the synthesizer.
+- MIDI IN (DIN5) available (NOT support USB MIDI).
+- Audio output for a stereo passive speaker (but output is monoral).
 ## Softwares
-	- Interpreter: micropython for Raspberry Pi PICO.
-	- Application: main.py and ymf825pico.py
+- Interpreter: micropython for Raspberry Pi PICO.
+- Application: main.py and ymf825pico.py
 ## Hardwares
-	- YMF825 breakout board
-	- Raspberry Pi PICO or PICO W
+- YMF825 breakout board
+- Raspberry Pi PICO or PICO W
+- MIDI/UART (3.3v) conversion circuit
+- USB MIDI/MIDI interface (if you need)
 
-# System Block Diagram
-
+# **System Block Diagram**
 | Hardwares                       | Pins  | Dir  | PICO Pins   |
 | ------------------------------- | ----- | ---- | ----------- |
 | MIDI IN(DIN5)--->UART I/F       | Tx    | ---> | UART.Rx     |
@@ -74,7 +86,8 @@ YMF825pico has 4 layers menu structures as below.
 
 There are 4 rotary encoders to change each layer's value.  For example, rotary encode 1 (RT1) is for the Main menu.  Rotate RT1, the Main menu will change the value as below.
 
-    PLAY <--> TIMBRE NAME <--> TIMBRE EDIT <--> TONE NAME <--> TONE EDIT <--> TONE COPY <--> PLAY.
+    PLAY <--> TIMBRE NAME <--> TIMBRE EDIT <--> TONE NAME <-->
+    TONE EDIT <--> TONE COPY <--> PLAY.
 
 Turning a rotary encoder right, the menu scrolls down or the value is up. Turning it left, the menu scrolls up or the value is down.
 
@@ -188,7 +201,7 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         |                 | SURE?           | Nothing happens. |
         |                 | YES             | Cancel the changes. |
         - Never overlap each tone's ranges of the voice number.
-        - VOLUME? are obsolete.
+        - VOLUME? value is from 0 to 31.  The value is mapped from 0% to 100% to control master volume of the timbre?.
 
               The tone volume corresponds to MIDI velosity.
 

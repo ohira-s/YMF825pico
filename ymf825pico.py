@@ -44,7 +44,7 @@
 #   00.600 2022/05/09: For Pi400 (original)
 #   00.100 2023/08/05: For PICO W
 #   01.000 2023/08/31: MIDI Keyboard available.
-#   01.001 2023/08/06: Databank available
+#   01.001 2023/09/06: Databank available
 ##################################################################################
 
 from machine import Pin, SPI
@@ -130,7 +130,7 @@ class ymf825pico_class:
 
             ##OP1
             # [ 4]: OP1:Sustain Rate 1111 | Ignore Key Off 0 | Key Scale Sensitivity 111
-            "Sustain Rate1":                          {"BYTE":  4, "SELF_MASK": 0x10, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Sustain Rate1":                          {"BYTE":  4, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
             "Ignore Key Off1":                        {"BYTE":  4, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
             "Key Scale Sensitivity1":                 {"BYTE":  4, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
@@ -162,7 +162,7 @@ class ymf825pico_class:
 
             ##OP2
             # [11]: OP2:Sustain Rate 1111 | Ignore Key Off 0 | Key Scale Sensitivity 111
-            "Sustain Rate2":                          {"BYTE": 11, "SELF_MASK": 0x10, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Sustain Rate2":                          {"BYTE": 11, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
             "Ignore Key Off2":                        {"BYTE": 11, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
             "Key Scale Sensitivity2":                 {"BYTE": 11, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
@@ -194,7 +194,7 @@ class ymf825pico_class:
 
             ##OP3
             # [18]: OP3:Sustain Rate 1111 | Ignore Key Off 0 | Key Scale Sensitivity 111
-            "Sustain Rate3":                          {"BYTE": 18, "SELF_MASK": 0x10, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Sustain Rate3":                          {"BYTE": 18, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
             "Ignore Key Off3":                        {"BYTE": 18, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
             "Key Scale Sensitivity3":                 {"BYTE": 18, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
@@ -226,7 +226,7 @@ class ymf825pico_class:
 
             ##OP4
             # [25]: OP4:Sustain Rate 1111 | Ignore Key Off 0 | Key Scale Sensitivity 111
-            "Sustain Rate4":                          {"BYTE": 25, "SELF_MASK": 0x10, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Sustain Rate4":                          {"BYTE": 25, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
             "Ignore Key Off4":                        {"BYTE": 25, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
             "Key Scale Sensitivity4":                 {"BYTE": 25, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
@@ -987,7 +987,7 @@ class ymf825pico_class:
 
         for (param,val) in paramHash.items():
             if param in self.synth_data_map:
-#            print("Edit:", param, "=", val)
+                print("Edit:", param, "=", val)
                 byte_order = self.synth_data_map[param]["BYTE"]
                 self_mask  = self.synth_data_map[param]["SELF_MASK"]
                 shift_left = self.synth_data_map[param]["SHFT_LEFT"]

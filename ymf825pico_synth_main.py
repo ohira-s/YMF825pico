@@ -75,6 +75,9 @@ ROTARY_ENCODERS = [
     {"NO": 3, "A_PIN": 8, "B_PIN": 9, "A_SW": None, "B_SW": None, "A_PREV": 2, "B_PREV": 2, "VALUES": [0,0,0,0]}   # Pin11, 12
 ]
 
+# Timbre portion's volumes
+timbre_volumes = [1.0] * 4
+
 # YMF825 parameters mapping and order (ABBR, REAL KEY NAME, VALUE RANGE)
 PARM_TEXT_OFF_ON = ["OFF", "ON"]
 PARM_TEXT_ALGO = ["Ab", "A+b", "AbCd+", "A+bc", "Abcd", "Ab+Cd", "A+bcd", "A+bc+d"]
@@ -181,27 +184,29 @@ menu_item = 0
 menu_value = 0
 
 #--- YMF825pico menu definitions
-# PLAY
-MAIN_MENU_PLAY_MANUAL = 0
+# MAIN:PLAY
 MAIN_MENU_PLAY = 0
+
+# PLAY>CATEGORY
+MAIN_MENU_PLAY_MANUAL = 0
 MAIN_MENU_PLAY_DEMO = 1
 MAIN_MENU_PLAY_DATABANK = 2
 
-# TIMBRE NAME
+# MAIN:TIMBRE NAME
 MAIN_MENU_TIMBRE_NAME = 1
 TIMBRE_NAME_LENGTH = 10
 
-# TIMBRE EDIT
+# MAIN:TIMBRE EDIT
 MAIN_MENU_TIMBRE_EDIT = 2
 
-# TONE NAME
+# MAIN:TONE NAME
 MAIN_MENU_TONE_NAME = 3
 TONE_NAME_LENGTH = 10
 
-# TONE EDIT
+# MAIN:TONE EDIT
 MAIN_MENU_TONE_EDIT = 4
 
-# TONE COPY
+# MAIN:TONE COPY
 MAIN_MENU_TONE_COPY = 5
 
 
@@ -390,11 +395,14 @@ def make_select_databank_menu(menu, prev_menu):
 # Select a timbre on the menu
 def on_select_timbre():
     global YMF825pico
+    global timbre_volumes
 
     # Set new timbre to YMF825pico class, then send a change timbre command to YMF825
 #    print("CHANGE TIMBRE TO ", SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["name"])
     YMF825pico.set_synth_play_timbre(menu_item)
     YMF825pico.set_timbre_tones(menu_item)
+    for prt in list(range(YMF825pico.TIMBRE_PORTIONS)):
+        timbre_volumes[prt] = YMF825pico.get_timbre_volume(menu_item, prt) / 31.0
 
 
 # Play a demo score
@@ -836,8 +844,11 @@ def on_copy_adssl():
 #    print("COPY ADSSL:", copy_from, copy_to)
     adssl = 0
     while adssl <= 4:
-        SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][copy_to]["selected"] = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][copy_from]["selected"]
+        SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][copy_to + adssl]["selected"] = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][copy_from + adssl]["selected"]
         adssl += 1
+
+    if reflect_tone_edit():
+        on_play_demo("DEMO1")
 
 
 #--- MAIN MENU: TONE COPY
@@ -897,6 +908,7 @@ SYNTH_MENU = [
         "on_select": make_select_play_menu,
         "on_selected": None,
         "CATEGORY": [
+            '''
             {   # MAIN_MENU_PLAY_MANUAL
                 "name": "MANUAL",
                 "on_select": make_select_manual_menu,
@@ -909,6 +921,7 @@ SYNTH_MENU = [
                 "on_selected": None,
                 "ITEM": []
             }
+            '''
         ]
     },
     {   # MAIN_MENU_TIMBRE_NAME
@@ -1102,7 +1115,7 @@ def midi_interface(midi_events, length):
                 # MIDI note
                 midi_note = midi_events[bt]
                 # MIDI velocity
-                midi_velo = midi_events[bt + 1]
+                midi_velo = int(midi_events[bt + 1] * timbre_volumes[timbre])
                 bt += 2
                 YMF825pico.stop_by_timbre_note(timbre, midi_note)
     
