@@ -353,9 +353,9 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         - You will see an expression like "Ab+cd" as the algorithm parameter.
 
           - a, b, c, d mean an operator in YMF825.
-          - A capital letter like A means an operator with self-feedback.
-          - A small letter like a means an operator without self-feedback.
-          - + means a mixer.
+          - A capital letter like 'A' means an operator with self-feedback.
+          - A small letter like 'a' means an operator without self-feedback.
+          - '+' means a mixer.
           - Ab means the operator-A modulates the operator-b. 
 
 
