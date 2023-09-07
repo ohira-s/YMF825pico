@@ -3,7 +3,8 @@ YMF825 FM synthesizer controlled with Raspberry Pi PICO.
 
 ## Installations:
 - Prepare Raspberry Pi PICO or PICO W with micropython.
-- Copy all files in doc folder into PICO.
+- Copy all files in data folder into PICO / folder.
+- Copy all files in scores folder into PICO /scores/ folder.
 - Copy YMF825pico_synth_main.py into PICO as main.py.
 - Copy YMF825pico.py into PICO.
 - YMF825piBasic.py is a test program, so don't care this file.
