@@ -127,6 +127,7 @@ An OLED display shows you the menus and the values.  THe layout is as below.
 
     - ### **Item:** ***demo list***
         The demo music names are listed in the Item area.
+        Demo music must be written in YMF825pico sequencer format.
 
     - #### **Items and Values**
         | Items           | Values | Descriptions |
@@ -363,14 +364,23 @@ An OLED display shows you the menus and the values.  THe layout is as below.
 - ## **Category:** ***tone list*** (TONE COPY > ***tone list***)
   Choose a tone name to copy to another tone.
 
+    - ### **Item:** DATABANK
+        Choose a databank number (0..9) to copy a tone data to.  The tone list will be re-loaded just after the databank is changed.
+
     - ### **Item:** ***tone list***
         Tone names are listed in the Item area.  The tone data of category tone name will be copied to an item tone name.
 
     - #### **Items and Values**
         | Items           | Values| Descriptions |
         | --------------- | ----- | ------------ |
+        | DATABANK        | 0..9  | Choose a databank to copy to |
         | ***tone list*** | NO    | Nothing happens. |
         |                 | SURE? | Nothing happens. |
         |                 | YES   | Copy to this tone. |
+
+
+
+# **Music Sequencer File Format**
+under construction...
 
 

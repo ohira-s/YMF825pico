@@ -44,7 +44,7 @@
 #   00.600 2022/05/09: For Pi400 (original)
 #   00.100 2023/08/05: For PICO W
 #   01.000 2023/08/31: MIDI Keyboard available.
-#   01.001 2023/09/06: Databank available
+#   01.001 2023/09/04: Databank available
 ##################################################################################
 
 from machine import Pin, SPI
@@ -387,7 +387,7 @@ class ymf825pico_class:
     def note_off( self, voice, volume = 0x54 ):
         if self.synth_voices[voice] in self.note_dict:
             s = self.get_scale_number( self.synth_voices[voice] )
-            print("STOP VOICE, SCALE:", voice,s)
+#            print("STOP VOICE, SCALE:", voice,s)
             self.spi_write_byte( 0x0B, voice & 0x0f )
             self.spi_write_byte( 0x0C, volume & 0x7c )
             self.spi_write_byte( 0x0D, self.notenum_hi[s] )
@@ -972,12 +972,10 @@ class ymf825pico_class:
         return paramHash
 
 
-    # Set one sound parameters to all voices.
+    # make one sound parameters to all voices.
     # This function is for sound editor.
     #   paramHash:: Tone parameter to edit as a hash
-    def set_editing_tone( self, paramHash ):
-#    print("Set begin:", self.sound_param)
-
+    def make_sound_param( self, paramHash ):
         #HED: 0,0x81,
         ## [ 0]: Register Address (constant)
         self.sound_param[0] = 0
@@ -987,7 +985,7 @@ class ymf825pico_class:
 
         for (param,val) in paramHash.items():
             if param in self.synth_data_map:
-                print("Edit:", param, "=", val)
+#                print("Edit:", param, "=", val)
                 byte_order = self.synth_data_map[param]["BYTE"]
                 self_mask  = self.synth_data_map[param]["SELF_MASK"]
                 shift_left = self.synth_data_map[param]["SHFT_LEFT"]
@@ -1002,6 +1000,42 @@ class ymf825pico_class:
         self.sound_param[33]=0x03
         self.sound_param[34]=0x81
         self.sound_param[35]=0x80
+        return self.sound_param
+
+
+    # Set one sound parameters to all voices.
+    # This function is for sound editor.
+    #   paramHash:: Tone parameter to edit as a hash
+    def set_editing_tone( self, paramHash ):
+        '''
+#    print("Set begin:", self.sound_param)
+
+        #HED: 0,0x81,
+        ## [ 0]: Register Address (constant)
+        self.sound_param[0] = 0
+
+        ## [ 1]: Header 0x80 + voices(=16 constant)
+        self.sound_param[1] = 0x80 + self.VOICES
+
+        for (param,val) in paramHash.items():
+            if param in self.synth_data_map:
+#                print("Edit:", param, "=", val)
+                byte_order = self.synth_data_map[param]["BYTE"]
+                self_mask  = self.synth_data_map[param]["SELF_MASK"]
+                shift_left = self.synth_data_map[param]["SHFT_LEFT"]
+                data_mask  = self.synth_data_map[param]["DATA_MASK"]
+                self.sound_param[byte_order] = (self.sound_param[byte_order] & data_mask) | ((val & self_mask) << shift_left)
+
+            else:
+                print("UNKNOWN PARAMETER NAME:", param, "=", val)
+
+        # TRAILER CODES: 0x80,0x03,0x81,0x80
+        self.sound_param[32]=0x80
+        self.sound_param[33]=0x03
+        self.sound_param[34]=0x81
+        self.sound_param[35]=0x80
+        '''
+        self.make_sound_param(paramHash)
 
         #Burst write mode and all key notes off
 #    print("EDITOR: YMF825 Burst write mode.")
