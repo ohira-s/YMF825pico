@@ -400,6 +400,12 @@ class ymf825pico_class:
         self.led_turn(False)
 
 
+    # All notes off
+    def all_notes_off( self ):
+        for voice in list(range(self.VOICES)):
+            self.note_off( voice )
+
+
     # Get scale number in fnum_hi nd lo.
     #   scale:: "C4", "D5#", "F2", "E3b" and so on. From "C0" to "G9".
     #
@@ -1007,34 +1013,7 @@ class ymf825pico_class:
     # This function is for sound editor.
     #   paramHash:: Tone parameter to edit as a hash
     def set_editing_tone( self, paramHash ):
-        '''
-#    print("Set begin:", self.sound_param)
-
-        #HED: 0,0x81,
-        ## [ 0]: Register Address (constant)
-        self.sound_param[0] = 0
-
-        ## [ 1]: Header 0x80 + voices(=16 constant)
-        self.sound_param[1] = 0x80 + self.VOICES
-
-        for (param,val) in paramHash.items():
-            if param in self.synth_data_map:
-#                print("Edit:", param, "=", val)
-                byte_order = self.synth_data_map[param]["BYTE"]
-                self_mask  = self.synth_data_map[param]["SELF_MASK"]
-                shift_left = self.synth_data_map[param]["SHFT_LEFT"]
-                data_mask  = self.synth_data_map[param]["DATA_MASK"]
-                self.sound_param[byte_order] = (self.sound_param[byte_order] & data_mask) | ((val & self_mask) << shift_left)
-
-            else:
-                print("UNKNOWN PARAMETER NAME:", param, "=", val)
-
-        # TRAILER CODES: 0x80,0x03,0x81,0x80
-        self.sound_param[32]=0x80
-        self.sound_param[33]=0x03
-        self.sound_param[34]=0x81
-        self.sound_param[35]=0x80
-        '''
+        # Make the sound parameter bytearray (sound_param)
         self.make_sound_param(paramHash)
 
         #Burst write mode and all key notes off
@@ -1098,118 +1077,6 @@ class ymf825pico_class:
             return( self.synth_equalizer_settings[eql] )
 
         return( None )
-
-
-    # Set sample sound parameters to YMF825.
-    #   GLOBAL sound_param[0]:: byte for register address (to be set it later)
-    #   GLOBAL sound_param[1..35]:: tone data
-#    def set_preset_tone2( self, timbre_from=0, timbre_to=self.TIMBRE_PORTIONS-1 ):
-    def set_preset_tone2( self ):
-        '''
-        #HED: 0,0x81,
-        ##Address
-        self.sound_param[ 0]=0
-        ##Header 0x80 + voices(=16)
-        self.sound_param[ 1]=0x80 + self.VOICES
-    
-        #BLS: 0x01,0x85,
-        ##Basic octave
-        self.sound_param[ 2]=1
-        ##LFO*64 + Algorithm
-        self.sound_param[ 3]=2*64+6
-    
-        #OP1: 0x00,0x7F,0xF4,0xBB,0x00,0x10,0x40,
-        ##OP1:Sustin rate*16 + Ignore key off*8 + Key scale sensitivity
-        self.sound_param[ 4]=0*16+0*8+0
-        ##OP1:Release rate*16 + Decay rate
-#    self.sound_param[ 5]=7*16+15
-        self.sound_param[ 5]=15*16+15
-        ##OP1:Atack rate*16 + Sustin level
-        self.sound_param[ 6]=15*16+4
-        ##OP1:Total operator level*16 + Key scaling level sensitivity
-        self.sound_param[ 7]=11*16+11
-        ##OP1:Depth of amp modulation*32 + Enable amp mod*16 + Depth of vibrato*2 + Enable vivlato
-        self.sound_param[ 8]=0*32+0*16+0*2+0
-        ##OP1:Multi contol magnification frequency*16 + Detune
-        self.sound_param[ 9]=1*16+0
-        ##OP1:Wave shape*8 + FM feedback level
-#    self.sound_param[10]=7*64+0
-        self.sound_param[10]=7*8+0
-    
-        #OP2: 0x00,0xAF,0xA0,0x0E,0x03,0x10,0x40,
-        ##OP2:Sustin rate*16 + Ignore key off*8 + Key scale sensitivity
-        self.sound_param[11]=0*16+0*8+0
-        ##OP2:Release rate*16 + Decay rate
-        self.sound_param[12]=10*16+15
-        ##OP2:Atack rate*16 + Sustin level
-        self.sound_param[13]=10*16+0
-        ##OP2:Total operator level*16 + Key scaling level sensitivity
-        self.sound_param[14]=0*16+14
-        ##OP2:Depth of amp modulation*32 + Enable amp mod*16 + Depth of vibrato*2 + Enable vivlato
-        self.sound_param[15]=0*32+0*16+0*2+3
-        ##OP2:Multi contol magnification frequency*16 + Detune
-        self.sound_param[16]=1*16+0
-        ##OP2:Wave shape*8 + FM feedback level
-#    self.sound_param[17]=7*64+0
-        self.sound_param[17]=7*8+0
-    
-        #OP3: 0x00,0x2F,0xF3,0x9B,0x00,0x20,0x41,
-        ##OP3:Sustin rate*16 + Ignore key off*8 + Key scale sensitivity
-        self.sound_param[18]=0*16+0*8+0
-        ##OP3:Release rate*16 + Decay rate
-#   self.sound_param[19]=2*16+15
-        self.sound_param[19]=15*16+15
-        ##OP3:Atack rate*16 + Sustin level
-        self.sound_param[20]=15*16+3
-        ##OP3:Total operator level*16 + Key scaling level sensitivity
-        self.sound_param[21]=9*16+11
-        ##OP3:Depth of amp modulation*32 + Enable amp mod*16 + Depth of vibrato*2 + Enable vivlato
-        self.sound_param[22]=0*32+0*16+0*2+0
-        ##OP3:Multi contol magnification frequency*16 + Detune
-        self.sound_param[23]=2*16+0
-        ##OP3:Wave shape*8 + FM feedback level
-#    self.sound_param[24]=7*64+1
-        self.sound_param[24]=7*8+1
-    
-        #OP4: 0x00,0xAF,0xA0,0x0E,0x01,0x10,0x40,
-        ##OP4:Sustin rate*16 + Ignore key off*8 + Key scale sensitivity
-        self.sound_param[25]=0*16+0*8+0
-        ##OP4:Release rate*16 + Decay rate
-        self.sound_param[26]=10*16+15
-        ##OP4:Atack rate*16 + Sustin level
-        self.sound_param[27]=10*16+0
-        ##OP4:Total operator level*16 + Key scaling level sensitivity
-        self.sound_param[28]=0*16+14
-        ##OP4:Depth of amp modulation*32 + Enable amp mod*16 + Depth of vibrato*2 + Enable vivlato
-        self.sound_param[29]=0*32+0*16+0*2+1
-        ##OP4:Multi contol magnification frequency*16 + Detune
-        self.sound_param[30]=1*16+0
-        ##OP4:Wave shape*8 + FM feedback level
-#    self.sound_param[31]=7*64+0
-        self.sound_param[31]=7*8+0
-    
-        # TRAILER CODES: 0x80,0x03,0x81,0x80
-        self.sound_param[32]=0x80
-        self.sound_param[33]=0x03
-        self.sound_param[34]=0x81
-        self.sound_param[35]=0x80
-    
-        self.synth_tones[2] = self.sound_param.copy()
-        self.synth_tone_names[2] = "PRESET TONE2"
-        '''
-        pass
-
-
-    # Set default sound parameters to YMF825.
-    # Must be called to set header and trailer byte into timbre sound data list.
-    def set_preset_tone01( self, tone ):
-    #    sound_param = [0,0x80 + VOICES] + ([0x01,0x85,0x00,0x7F,0xF4,0xBB,0x00,0x10,0x40,0x00,0xAF,0xA0,0x0E,0x03,0x10,0x40,0x00,0x2F,0xF3,0x9B,0x00,0x20,0x41,0x00,0xAF,0xA0,0x0E,0x01,0x10,0x40]*VOICES) + [0x80,0x03,0x81,0x80]
-#        self.sound_param = [0,0x80 + self.VOICES] + [0x01,0x85,0x00,0x7F,0xF4,0xBB,0x00,0x10,0x40,0x00,0xAF,0xA0,0x0E,0x03,0x10,0x40,0x00,0x2F,0xF3,0x9B,0x00,0x20,0x41,0x00,0xAF,0xA0,0x0E,0x01,0x10,0x40] + [0x80,0x03,0x81,0x80]
-#        self.synth_tones[tone] = self.sound_param.copy()
-        if tone == 0:
-            self.synth_tone_names[tone] = "EDITING"
-#        else:
-#            self.synth_tone_names[tone] = "PRESET TONE" + str(tone)
 
 
     # Get the current databak number
@@ -1323,7 +1190,7 @@ class ymf825pico_class:
 
 
     # Save equalizer data.
-    def save_equalizer_data( self, name_file = "YMF825EQName.txt", equalizer_file = "YMF825EQParm.txxt", encode = "utf-8" ):
+    def save_equalizer_data( self, name_file = "YMF825EQName.txt", equalizer_file = "YMF825EQParm.txt", encode = "utf-8" ):
         try:
             file = open( name_file.replace(".txt", str(self.DATABANK) + ".txt"), "w", encoding = encode )
         except OSError as e:
@@ -1416,8 +1283,8 @@ class ymf825pico_class:
                                         {"voice_from": 14, "voice_to": 15, "tone": 2}
                                     ]
 
-        #Initialize EDITING tone (to be overwritten by load_tone_data)
-        self.set_preset_tone01( 0 )
+        # Initialize EDITING tone (to be overwritten by load_tone_data)
+        self.synth_tone_names[0] = "EDITING"
 
         # Load tone data
         self.load_tone_data()
@@ -1427,10 +1294,6 @@ class ymf825pico_class:
 
         # load equalizer data
         self.load_equalizer_data()
-
-        # Preset tones 1 and 2 (not to be overwritten by load_tone_data)
-        self.set_preset_tone01( 1 )
-        self.set_preset_tone2()
 
         # Timbre0 is EDITING timbre (not to be overwritten by load_timbre_data)
         self.synth_timbre_names[0] = "EDITING"

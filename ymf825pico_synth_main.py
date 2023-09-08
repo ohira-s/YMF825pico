@@ -35,6 +35,7 @@
 #   01.000 2023/08/31: UI Editor and MIDI Keyboard are available.
 #   01.001 2023/09/04: Databank available
 #   01.100 2023/09/06: Sequencer available
+#   01.200 2023/09/08: Equalizer available
 #############################################################################
 
 from ymf825pico import ymf825pico_class
@@ -190,8 +191,9 @@ MAIN_MENU_PLAY = 0
 
 # PLAY>CATEGORY
 MAIN_MENU_PLAY_MANUAL = 0
-MAIN_MENU_PLAY_DEMO = 1
-MAIN_MENU_PLAY_DATABANK = 2
+MAIN_MENU_PLAY_EQUALIZER = 1
+MAIN_MENU_PLAY_DEMO = 2
+MAIN_MENU_PLAY_DATABANK = 3
 
 # MAIN:TIMBRE NAME
 MAIN_MENU_TIMBRE_NAME = 1
@@ -210,6 +212,12 @@ MAIN_MENU_TONE_EDIT = 4
 # MAIN:TONE COPY
 MAIN_MENU_TONE_COPY = 5
 
+# MAIN:EQUALIZER NAME
+MAIN_MENU_EQUALIZER_NAME = 6
+EQUALIZER_NAME_LENGTH = 10
+
+# MAIN:EQUALIZER EDIT
+MAIN_MENU_EQUALIZER_EDIT = 7
 
 # Show menu
 # item_move_dir: 1=item list down, -1=item list up
@@ -338,6 +346,12 @@ def make_select_play_menu(menu, prev_menu):
             "on_selected": None,
             "ITEM": []
         },
+        {   # MAIN_MENU_PLAY_EQUALIZER
+            "name": "EQUALIZER",
+            "on_select": make_select_equalizer_menu,
+            "on_selected": None,
+            "ITEM": []
+        },
         {   # MAIN_MENU_PLAY_DEMO
             "name": "DEMO",
             "on_select": make_select_demo_menu,
@@ -371,9 +385,22 @@ def make_select_manual_menu(menu, prev_menu):
 
     tmb_list = YMF825pico.get_synth_timbre_names()
     SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"][MAIN_MENU_PLAY_MANUAL]["ITEM"] = []
+    SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"][MAIN_MENU_PLAY_MANUAL]["ITEM"].append({"name": "NOTES OFF", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_select_timbre, "on_selected": None}, {"name": None}]})
+    timbre_value =[{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SET", "on_select": on_select_timbre, "on_selected": None}, {"name": None}]
     for tmb in tmb_list:
         # VALUES.name is None means this is a straight forward item menu (not rotary menu)
-        SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"][MAIN_MENU_PLAY_MANUAL]["ITEM"].append({"name": tmb, "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SET", "on_select": on_select_timbre, "on_selected": None}, {"name": None}]})
+        SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"][MAIN_MENU_PLAY_MANUAL]["ITEM"].append({"name": tmb, "on_select": None, "on_selected": None, "selected": 0, "VALUE": timbre_value})
+
+
+#--- CATEGORY MENU: EQUALIZER
+# Make select demo menu (PLAY>MANUAL>equalizer list>selelct)
+def make_select_equalizer_menu(menu, prev_menun):
+    global YMF825pico
+
+    eq_list = YMF825pico.get_synth_equalizer_names()
+    SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"][MAIN_MENU_PLAY_EQUALIZER]["ITEM"] = []
+    for eq in eq_list:
+        SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"][MAIN_MENU_PLAY_EQUALIZER]["ITEM"].append({"name": eq, "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SET", "on_select": None, "on_selected": on_set_equalizer}, {"name": None}]})
 
 
 #--- CATEGORY MENU: DEMO
@@ -408,12 +435,23 @@ def on_select_timbre():
     global YMF825pico
     global timbre_volumes
 
+    # All notes off
+    if menu_item == 0:
+        YMF825pico.all_notes_off()
+
     # Set new timbre to YMF825pico class, then send a change timbre command to YMF825
-#    print("CHANGE TIMBRE TO ", SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["name"])
-    YMF825pico.set_synth_play_timbre(menu_item)
-    YMF825pico.set_timbre_tones(menu_item)
-    for prt in list(range(YMF825pico.TIMBRE_PORTIONS)):
-        timbre_volumes[prt] = YMF825pico.get_timbre_volume(menu_item, prt) / 31.0
+    else:
+#        print("CHANGE TIMBRE TO ", SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["name"])
+        timbre = menu_item - 1
+        YMF825pico.set_synth_play_timbre(timbre)
+        YMF825pico.set_timbre_tones(timbre)
+        for prt in list(range(YMF825pico.TIMBRE_PORTIONS)):
+            timbre_volumes[prt] = YMF825pico.get_timbre_volume(timbre, prt) / 31.0
+
+
+# Set an equalizer
+def on_set_equalizer():
+    YMF825pico.set_synth_equalizer(menu_item)
 
 
 # Play a demo score
@@ -447,8 +485,6 @@ def load_current_databank():
     YMF825pico.load_timbre_data()
     # load equalizer data
     YMF825pico.load_equalizer_data()
-    # Set a default tone
-    YMF825pico.set_preset_tone01( 1 )
 
 
 def on_change_databank():
@@ -935,6 +971,204 @@ def on_change_copy_parm():
 #        YMF825pico.save_edited_data_to_tone(menu_item)
 
 
+#--- MAIN MENU: EQUALIZER NAME
+# Make edit equalizer name menu (TONE>tone list>equalizer name>selelct)
+def make_edit_equalizer_name_menu(menu, prev_menu):
+    clear_menu_memory(prev_menu, True, True, True)
+
+    eq_list = YMF825pico.get_synth_equalizer_names()
+    SYNTH_MENU[MAIN_MENU_EQUALIZER_NAME]["CATEGORY"] = []
+    for equalizer in eq_list:
+        values = []
+        for ch in CHARS_LIST:
+            values.append({"name": ch, "on_select": on_change_char, "on_selected": None})
+
+        # Current tone name as ITEM menu
+        item = []
+        for i in list(range(EQUALIZER_NAME_LENGTH)):
+            ch = equalizer[i:i+1]
+            if ch == "":
+                ch = " "
+            item.append({"name": ch, "on_select": None, "on_selected": None, "selected": 0, "VALUE": values})
+
+        item.append({"name": "SAVE",   "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_save_equalizer_name, "on_selected": None}, {"name": None}]})
+        item.append({"name": "CANCEL", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_cancel_equalizer_name, "on_selected": None}, {"name": None}]})
+
+        SYNTH_MENU[MAIN_MENU_EQUALIZER_NAME]["CATEGORY"].append({"name": equalizer, "on_select": None, "on_selected": None, "ITEM": item})
+
+
+def on_save_equalizer_name():
+    global menu_main, menu_category, menu_item, menu_value
+
+    # Change the current tone name
+    name = ""
+    for i in list(range(TIMBRE_NAME_LENGTH)):
+        ch = CHARS_LIST[SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["selected"]]
+        name += ch if ch != CHARS_LIST[0] else SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["name"]
+
+    print("CHANGE EQUALIZER NAME[{}]={}".format(menu_category, name))
+    YMF825pico.rename_equalizer(menu_category, name)
+
+    # Save equalizer data
+    YMF825pico.save_equalizer_data()
+
+    # Initialize the TONE NAME menu
+    make_edit_equalizer_name_menu(menu_main, menu_main)
+    on_cancel_equalizer_name()
+
+
+def on_cancel_equalizer_name():
+    print("CANCEl EQ NAME")
+    on_cancel_timbre_name()
+
+
+#--- MAIN MENU: EQUALIZER EDIT
+# Make edit equalizer edit menu (TONE>tone list>equalizer eit>selelct)
+equalizer_value_index = 0
+def make_edit_equalizer_edit_menu(menu, prev_menu):
+    global equalizer_value_index
+
+    clear_menu_memory(prev_menu, True, True, True)
+
+    equalizer_value_index = 0
+    eq_list = YMF825pico.get_synth_equalizer_names()
+    SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"] = []
+    eq_id = 0
+    for equalizer in eq_list:
+
+        eq_parm = YMF825pico.get_equalizer_parameters(eq_id)
+        print("EQ PARM[", eq_id, "]=", eq_parm)
+
+        values = []
+        for i in list(range(10)):
+            values.append({"name": str(i), "on_select": None, "on_selected": on_change_decimal_places})
+
+        # Current tone name as ITEM menu
+        item = [{"name": "DECIMAL PL", "on_select": None, "on_selected": None, "selected": 0, "VALUE": values}]
+        for i in list(range(3)):
+            eqname = "EQ" + str(i) + " "
+            val = str(eq_parm[i]["ceq0"])
+            print("STR=", val)
+            item.append({"name": eqname + "IN B0", "on_select": on_change_equalizer_parameter, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
+
+            val = str(eq_parm[i]["ceq1"])
+            item.append({"name": eqname + "IN B1", "on_select": on_change_equalizer_parameter, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
+
+            val = str(eq_parm[i]["ceq2"])
+            item.append({"name": eqname + "IN B2", "on_select": on_change_equalizer_parameter, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
+
+            val = str(eq_parm[i]["ceq3"])
+            item.append({"name": eqname + "IN A1", "on_select": on_change_equalizer_parameter, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
+
+            val = str(eq_parm[i]["ceq4"])
+            item.append({"name": eqname + "IN A2", "on_select": on_change_equalizer_parameter, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
+
+        item.append({"name": "SAVE",   "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_save_equalizer_edit, "on_selected": None}, {"name": None}]})
+        item.append({"name": "CANCEL", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_cancel_equalizer_edit, "on_selected": None}, {"name": None}]})
+        item.append({"name": "RESET", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_reset_equalizer_edit, "on_selected": None}, {"name": None}]})
+
+        SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"].append({"name": equalizer, "on_select": None, "on_selected": None, "ITEM": item})
+        eq_id += 1
+
+
+# Change equalizer parameter
+def on_change_equalizer_parameter(menu, prev_menu):
+    # Set equalizer and play demo
+    if prev_menu <= 15:
+        save_equalizer_edit()
+        YMF825pico.set_synth_equalizer(menu_category)
+        on_play_demo("demo1", False)
+
+
+# Change the decimal places
+def on_change_decimal_places():
+    SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"] = menu_value
+
+# Change an equalizer parameter
+def on_change_eq_param():
+    global equalizer_value_index
+
+    # Value move direction
+    sign = 0
+    if menu_value == 0 and equalizer_value_index == 2:
+        print("plus")
+        sign = 1
+    elif menu_value == 2 and equalizer_value_index == 0:
+        print("minus")
+        sign = -1
+    elif menu_value > equalizer_value_index:
+        print("PLUS")
+        sign = 1
+    elif menu_value < equalizer_value_index:
+        print("MINUS")
+        sign = -1
+        
+    equalizer_value_index = menu_value
+    if sign == 0:
+        return
+
+    decimal = SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][0]["selected"]
+    val = float(SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item]["VALUE"][0]["name"])
+    if decimal >= 1:
+        sign = float(("-" if sign == -1 else "") + "." + ("0" * (decimal - 1)) + "1")
+
+    val += sign
+    s = str(val)
+    SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item]["VALUE"][0]["name"] = s
+    SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item]["VALUE"][1]["name"] = s
+    SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item]["VALUE"][2]["name"] = s
+
+
+# Save the edited equalize parameters
+def save_equalizer_edit():
+    print("on_save_equalizer_edit")
+    eq0 = {}
+    eq1 = {}
+    eq2 = {}
+    for parm in list(range(5)):
+        ceq = "ceq" + str(parm)
+        eq0[ceq] = float(SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][parm +  1]["VALUE"][0]["name"])
+        eq1[ceq] = float(SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][parm +  6]["VALUE"][0]["name"])
+        eq2[ceq] = float(SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][parm + 11]["VALUE"][0]["name"])
+
+#    print("SAVE EQ0[", menu_category, "]=", eq0)
+#    print("SAVE EQ1[", menu_category, "]=", eq1)
+#    print("SAVE EQ2[", menu_category, "]=", eq2)
+    YMF825pico.save_edited_data_to_equalizer( menu_category, eq0, eq1, eq2 )
+
+
+# Save the edited equalize parameters
+def on_save_equalizer_edit():
+    save_equalizer_edit()
+    YMF825pico.save_equalizer_data()
+    YMF825pico.set_synth_equalizer(menu_category)
+
+
+# Cancel equalizer parameters edited
+def on_cancel_equalizer_edit():
+    print("on_cancel_equalizer_edit")
+    global menu_main, menu_category, menu_item, menu_value
+
+    # Clear selected data and initialize the TIMBRE NAME menu
+    menu_item = 0
+    make_edit_equalizer_edit_menu(menu_main, menu_main)
+    menu_value = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"]
+    show_menu(0)
+
+
+# Reset equalizer parameter to the all path filter
+def on_reset_equalizer_edit():
+    print("on_reset_equalizer_edit")
+    for i in list(range(15)):
+        val = "1.0" if i % 5 == 0 else "0.0"
+        SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][i + 1]["VALUE"][0]["name"] = val
+        SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][i + 1]["VALUE"][1]["name"] = val
+
+    menu_item = 0
+    equalizer_value_index = 0
+    show_menu(0)
+
+
 # YMF825pico 4 layers' menu structures: MAIN>CATEGORY>ITEM>VALUE
 SYNTH_MENU = [
     {   # MAIN_MENU_PLAY
@@ -985,6 +1219,18 @@ SYNTH_MENU = [
     {   # MAIN_MENU_TONE_COPY
         "name": "TONE COPY",
         "on_select": make_edit_tone_copy_menu,
+        "on_selected": None,
+        "CATEGORY": []
+    },
+    {   # MAIN_MENU_EQUALIZER_NAME
+        "name": "EQUALIZER NAME",
+        "on_select": make_edit_equalizer_name_menu,
+        "on_selected": None,
+        "CATEGORY": []
+    },
+    {   # MAIN_MENU_EQUALIZER_EDIT
+        "name": "EQUALIZER EDIT",
+        "on_select": make_edit_equalizer_edit_menu,
         "on_selected": None,
         "CATEGORY": []
     }
@@ -1182,7 +1428,6 @@ def piano_role_player(score_file="score1.txt", file_encode="utf-8"):
                     YMF825pico.load_tone_data()
                     YMF825pico.load_timbre_data()
                     YMF825pico.load_equalizer_data()
-                    YMF825pico.set_preset_tone01(1)
                     
                 elif var_name == "TIMBRE":
                     YMF825pico.set_synth_play_timbre(int(val))

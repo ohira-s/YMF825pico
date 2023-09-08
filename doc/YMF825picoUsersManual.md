@@ -15,6 +15,17 @@
     MIDI CH3 ---> TIMBREx-PORTION2 ---> TONE0..19 / VOICES0..15 / VOLUME0..31
 
     MIDI CH4 ---> TIMBREx-PORTION3 ---> TONE0..19 / VOICES0..15 / VOLUME0..31
+- 3 bands equalizer (Biquad Filters). 
+- 10 databanks in PICO, each databank has 20 timbre sets, 20 tones and 10 equalizers.
+
+| BLOCK:     | DATABANK  | TIMBRE  | PORTION  | MIDI CH   | VOICE        | TONE  | EQUALIZER  |
+|----------- | --------- | ------- | -------- | --------- | ------------ | ----- | ---------- |
+| QTY:       | 0..9      | 0..19   | 0..3     | 1..16     | 0..15        | 0..19 | 0..9       |
+| STRUCTURE: | DATABANKi | TIMBREj | PORTION0 | 1,5,9,13  | V0from..V0to | TONEp | EQUALIZERx |
+|            |           |         | PORTION1 | 2,6,10,14 | V1from..V1to | TONEq |            |
+|            |           |         | PORTION2 | 3,7,11,15 | V2from..V2to | TONEr |            |
+|            |           |         | PORTION3 | 4,8,12,16 | V3from..V3to | TONEs |            |
+
 
 ## MIDI Controles
 - Note on event with MIDI channel and verosity.
@@ -72,15 +83,19 @@ YMF825pico has 4 layers menu structures as below.
 	⁃ Value
 
 
-| Main        | Category      | Item          | Value        |
-| ----------- | ------------- | ------------- | ------------ |
-| PLAY        | MANUAL        | *timbre list* | NO/SET       |
-|             | DEMO          | DEMO1..3      | NO/PLAY      |
-| TIMBRE NAME | *timbre list* | A..Z0..9      | =A..Z0..9    |
-| TIMBRE EDIT | *timbre list* | *parameters*  | *values*     |
-| TONE NAME   | *tone list*   | A..Z0..9      | =A..Z0..9    |
-| TONE EDIT   | *tone list*   | *parameters*  | *values*     |
-| TONE COPY   | *tone list*   | *tone list*   | NO/SURE?/YES |
+| Main           | Category         | Item             | Value        |
+| -------------- | ---------------- | ---------------- | ------------ |
+| PLAY           | MANUAL           | *timbre list*    | NO/SET       |
+|                | EQIALIZER        | *equalizer list* | NO/PLAY      |
+|                | DEMO             | DEMO1..3         | NO/PLAY      |
+|                | DATABANK         | 0..9             | NO/PLAY      |
+| TIMBRE NAME    | *timbre list*    | A..Z0..9         | =A..Z0..9    |
+| TIMBRE EDIT    | *timbre list*    | *parameters*     | *values*     |
+| TONE NAME      | *tone list*      | A..Z0..9         | =A..Z0..9    |
+| TONE EDIT      | *tone list*      | *parameters*     | *values*     |
+| TONE COPY      | *tone list*      | *tone list*      | NO/SURE?/YES |
+| EQUALIZER NAME | *equalizer list* | A..Z0..9         | =A..Z0..9    |
+| EQUALIZER EDIT | *equalizer list* | *parameters*     | *values*     |
 
 *italic*: variable list
 
@@ -118,8 +133,24 @@ An OLED display shows you the menus and the values.  THe layout is as below.
     - #### **Items and Values**
         | Items             | Values | Descriptions |
         | ----------------- | ------ | ------------ |
+        | NOTES OFF         | NO     | Nothing happends. |
+        |                   | SURE?  | Nothing happends. |
+        |                   | YES    | All notes off. |
         | ***timbre name*** | NO     | Nothing happens. |
         |                   | SET    | Play with this timbre. |
+
+
+- ## **Category: EQUALIZER (PLAY > EQUALIZER)**
+  Apply an equalizer to playing sound.
+
+    - ### **Item:** ***timbre list***
+        The equalizer names are listed in the Item area.
+
+    - #### **Items and Values**
+        | Items                | Values | Descriptions |
+        | -------------------- | ------ | ------------ |
+        | ***equalizer name*** | NO     | Nothing happends. |
+        |                      | SET    | Apply this equalizer. |
 
 
 - ## **Category: DEMO (PLAY > DEMO)**
@@ -378,6 +409,69 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         |                 | SURE? | Nothing happens. |
         |                 | YES   | Copy to this tone. |
 
+
+# **Main: EQUALIZER NAME**
+- ## **Category:** ***equalizer list*** (EQUALIZER NAME > ***timbre list***)
+  Choose a timbre name to edit it.
+
+    - ### **Item:** ***name characters***
+        Characters of the equalizer name are listed in the Item area.
+
+    - #### **Items and Values**
+        | Items           | Values     | Descriptions |
+        | --------------- | ---------- | ------------ |
+        | ***character*** | =          | Not change. |
+        |                 | A..Z0..9   | Change the character to this. |
+        | SAVE            | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Save as new name. |
+        | CANCEL          | NO         | Nothing happens. |
+        |                 | SURE?      | Nothing happens. |
+        |                 | YES        | Cancel the changes. |
+
+
+# **Main: EQUALIZER EDIT**
+- ## **Category:** ***equalizer list*** (EQUALIZER EDIT > ***equalizer list***)
+  Choose a equalizer name to edit the parameters.
+
+    - ### **Item:** ***equalizer parameters***
+        Equalizer parameters are listed in the Item area.  An equalizer has 3 biquad filters (1..3).
+
+    - #### **Items and Values**
+        | Items           | Values          | Descriptions |
+        | --------------- | --------------- | ------------ |
+        | DECIMAL PLC     | 0..9            | Choose a decimal place to edit. 0 means the integer part. |
+        | EQ1 IN B0       | -2.0 .. 2.0     | 1st biquad filter parameter b0. |
+        | EQ1 IN B1       | -2.0 .. 2.0     | 1st biquad filter parameter b1. |
+        | EQ1 IN B2       | -2.0 .. 2.0     | 1st biquad filter parameter b2. |
+        | EQ1 FB A1       | -2.0 .. 2.0     | 1st biquad filter parameter a1. |
+        | EQ1 FB A2       | -2.0 .. 2.0     | 1st biquad filter parameter a2. |
+        | EQ2 IN B0       | -2.0 .. 2.0     | 2nd biquad filter parameter b0. |
+        | EQ2 IN B1       | -2.0 .. 2.0     | 2nd biquad filter parameter b1. |
+        | EQ2 IN B2       | -2.0 .. 2.0     | 2nd biquad filter parameter b2. |
+        | EQ2 FB A1       | -2.0 .. 2.0     | 2nd biquad filter parameter a1. |
+        | EQ2 FB A2       | -2.0 .. 2.0     | 2nd biquad filter parameter a2. |
+        | EQ3 IN B0       | -2.0 .. 2.0     | 3rd biquad filter parameter b0. |
+        | EQ3 IN B1       | -2.0 .. 2.0     | 3rd biquad filter parameter b1. |
+        | EQ3 IN B2       | -2.0 .. 2.0     | 3rd biquad filter parameter b2. |
+        | EQ3 FB A1       | -2.0 .. 2.0     | 3rd biquad filter parameter a1. |
+        | EQ3 FB A2       | -2.0 .. 2.0     | 3rd biquad filter parameter a2. |
+        | SAVE            | NO              | Nothing happens. |
+        |                 | SURE?           | Nothing happens. |
+        |                 | YES             | Save as new name. |
+        | CANCEL          | NO              | Nothing happens. |
+        |                 | SURE?           | Nothing happens. |
+        |                 | YES             | Cancel the changes. |
+        | RESET           | NO              | Nothing happens. |
+        |                 | SURE?           | Nothing happens. |
+        |                 | YES             | Reset to the all pass filter. |
+        - A biquad filter's equation is as below.
+
+                  b0 + b1/z + b2/z/z
+
+          H(z) = -----------------------
+
+                  a0 + a1/z + a2/z/z        : a0-->0.0
 
 
 # **Music Sequencer File Format**
