@@ -221,14 +221,19 @@ MAIN_MENU_EQUALIZER_EDIT = 7
 
 # Show menu
 # item_move_dir: 1=item list down, -1=item list up
+# slide: Number of characters to slide the vertical line diveding the item and value regions
+# str_head: True = Get the item string from head / Faluse = from tail
 item_menu_display_start = 0
-def show_menu(item_move_dir):
+def show_menu(item_move_dir, slide=0, str_head=True):
     global YMF825pico
     global item_menu_display_start
     global menu_main, menu_category, menu_item, menu_value
 
 #    print(SYNTH_MENU)
 #    print(menu_main, menu_category, menu_item, menu_value)
+
+    # Vertical divide point
+    v_divide = DISPLAY_DIVIDE - slide * 8
 
     # Show MAIN and CATEGORY
     main_name = SYNTH_MENU[menu_main]["name"]
@@ -247,7 +252,7 @@ def show_menu(item_move_dir):
     display.hline(0, DISPLAY_LINE_HEIGHT - 2, DISPLAY_WIDTH, True)
     display.text(category_name, 0, DISPLAY_LINE_HEIGHT, True)
     display.hline(0, DISPLAY_LINE_HEIGHT * 2 - 2, DISPLAY_WIDTH, True)
-    display.vline(DISPLAY_DIVIDE, DISPLAY_LINE_HEIGHT * 2 - 2, DISPLAY_HEIGHT - (DISPLAY_LINE_HEIGHT * 2 - 2), True)
+    display.vline(v_divide, DISPLAY_LINE_HEIGHT * 2 - 2, DISPLAY_HEIGHT - (DISPLAY_LINE_HEIGHT * 2 - 2), True)
 
     # Show ITEM and VALUE
     items = len(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"])
@@ -268,7 +273,7 @@ def show_menu(item_move_dir):
     for i in list(range(menu_s, min(items, menu_s + DISPLAY_MENU_LINES))):
         # Show ITEM
         item_name = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["name"]
-        display.text(item_name, 0, y, True)
+        display.text(item_name if slide == 0 else item_name[0:10-slide] if str_head else item_name[slide-10:], 0, y, True)
         
         # Show the current editing VALUE
         if i == menu_item:
@@ -282,7 +287,7 @@ def show_menu(item_move_dir):
             value_name = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["VALUE"][selected]["name"]
 
 #        print("SHOW=", value_name)
-        display.text(value_name, DISPLAY_DIVIDE + 2, y, True)
+        display.text(value_name, v_divide + 2, y, True)
         y += DISPLAY_LINE_HEIGHT
 
     display.show()
@@ -1374,8 +1379,22 @@ def get_rotary_encoders():
                     if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["VALUE"][menu_value]["on_select"] is not None:
                         SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["VALUE"][menu_value]["on_select"]()
 
+                    # Slide item region to left
+                    if menu_main == MAIN_MENU_TONE_EDIT:
+                        slide = 1
+                        str_head = True
+                    elif menu_main == MAIN_MENU_TIMBRE_EDIT:
+                        slide = 5
+                        str_head = True
+                    elif menu_main == MAIN_MENU_EQUALIZER_EDIT:
+                        slide = 5
+                        str_head = False
+                    else:
+                        slide = 0
+                        str_head = True
+
                     # Change menu
-                    show_menu(0)
+                    show_menu(0, slide, str_head)
 
                     # on selected an item
                     if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["VALUE"][menu_value]["on_selected"] is not None:

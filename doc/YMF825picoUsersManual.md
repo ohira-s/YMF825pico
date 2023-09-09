@@ -122,6 +122,28 @@ An OLED display shows you the menus and the values.  THe layout is as below.
     | Item     | Value |
     | :        | :     |
 
+- Example: TIMBRE EDIT
+
+    | TIMBRE EDIT |        |
+    | ----------- | ------ |
+    | ROCK BAND   |        |
+    | TONE0       | GUITAR |
+    | VOICE L0    | 0      |
+    | VOICE H0    | 5      |
+    | VOLUME0     | 31     |
+    | TONE1       | BASS   |
+    | VOICE L1    | 6      |
+    | VOICE H1    | 8      |
+    | VOLUME1     | 31     |
+    | TONE2       | DRUM   |
+    | VOICE L2    | 9      |
+    | VOICE H2    | 11     |
+    | VOLUME2     | 20     |
+    | TONE3       | SYNTH  |
+    | VOICE L3    | 12     |
+    | VOICE H3    | 15     |
+    | VOLUME3     | 25     |
+
 
 # **Main: PLAY**
 - ## **Category: MANUAL (PLAY > MANUAL)**
@@ -475,6 +497,63 @@ An OLED display shows you the menus and the values.  THe layout is as below.
 
 
 # **Music Sequencer File Format**
-under construction...
+YMF825pico can play music with sequencer file. The file format is the original for YMF825pico.
 
+## Header
+The header part declares a databank and a timbre for an instruments to play sequencer music. And also declares an interval time to play one sequence step. 
+### Format
+    
+    #DATABANK=***databank number***
+    #TIMBRE=***timbre number***
+    #WAIT=***interval(sec)***
 
+### Example
+    
+    #DATABANK=1
+    #TIMBRE=5
+    #WAIT=0.5
+
+## Score
+The score line defines scores for each timbre portion.
+### Format
+
+    |***portion number***:***start note name***:***any characters for score***|***portion number***:...|
+
+### Example
+    |0:C3:_*_*__*_*_*__*_*__*_*_*__|1:F2:_*_*__*_*_|2:C4:_*_*__*_*_*__|
+
+The score for the portion 0 covers the notes from C3 to C5. '_' means a white key in piano and '*' means a black key. However you can use any character except '|' for '_' and '*'.
+
+In this case, the portion 3 has no note to play.
+
+## Notes
+### Format
+    
+    volume(0..9)  
+    note off(-)
+
+### Example
+
+    |0:C3:_*_*__*_*_*__*_*__*_*_*__|1:F2:_*_*_*__*_*_|2:C4:_*_*__*_*_*__|
+          9                                6    6
+          .                                .    .
+          .   7                            - 6  -   6   
+          -   .                              .      .
+              .  5                         6 -  6   -
+              -  .                         .    .
+                 .                         .    .
+                 -                         -    -
+    |0:C3:_*_*__*_*_*__*_*__*_*_*__|1:F2:_*_*__*_*_|2:C4:_*_*__*_*_*__|
+          9   9  9                                       8   8      7
+          .   .  .                                       .   .      .
+          9   9  9                                       -   -      -
+          .   .  .                                       8   8      7
+          -   -  -                                       -   -      -
+
+In the portion 0, YMF825pico sequencer plays C3 at the step 1.  C3 cotinues 3 steps, then stop at step 4.
+
+In the portion2, both G2 and C3 sound at the step 1.
+
+You can write the score line anywhere for getting readable score.
+
+'-' executes a note off.  It uses one step for note off, so no note plays in the step.  If you want to execute note off and note on in one step, write a volume number at the step. '-' executes note off only, but volume number executes note off and note on in a step.
