@@ -122,7 +122,7 @@ class ymf825pico_class:
         self.synth_data_map = {
             ##COMMON
             # [ 2]: NOP 000000 | Basic Octave 11
-            "Basic Octave":                           {"BYTE":  2, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0x00},
+            "Basic Oct":                           {"BYTE":  2, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0x00},
 
             # [ 3]:LFO 11 | NOP 000 | Algorithm 111
             "LFO":                                    {"BYTE":  3, "SELF_MASK": 0x03, "SHFT_LEFT": 6, "DATA_MASK": 0x07},
@@ -130,131 +130,131 @@ class ymf825pico_class:
 
             ##OP1
             # [ 4]: OP1:Sustain Rate 1111 | Ignore Key Off 0 | Key Scale Sensitivity 111
-            "Sustain Rate1":                          {"BYTE":  4, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
-            "Ignore Key Off1":                        {"BYTE":  4, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
-            "Key Scale Sensitivity1":                 {"BYTE":  4, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
+            "Sus R1":                          {"BYTE":  4, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Ign Key Off1":                        {"BYTE":  4, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
+            "Key Scale Sens1":                 {"BYTE":  4, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
             # [ 5]: OP1:Release Rate 1111 | Decay Rate 0000
-            "Release Rate1":                          {"BYTE":  5, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
-            "Decay Rate1":                            {"BYTE":  5, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
+            "Release R1":                          {"BYTE":  5, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Decay R1":                            {"BYTE":  5, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
 
             # [ 6]: OP1:Attack Rate 1111 | Sustain Level 0000
-            "Attack Rate1":                           {"BYTE":  6, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
-            "Sustain Level1":                         {"BYTE":  6, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
+            "Attack R1":                           {"BYTE":  6, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Sus Level1":                         {"BYTE":  6, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
 
             # [ 7]: OP1:Total Operator Level 111111 | Key Scale Level Sensivitiy 00
-            "Total Operator Level1":                  {"BYTE":  7, "SELF_MASK": 0x3f, "SHFT_LEFT": 2, "DATA_MASK": 0x03},
-            "Key Scale Level Sensivitiy1":            {"BYTE":  7, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0xfc},
+            "Operator Lv1":                  {"BYTE":  7, "SELF_MASK": 0x3f, "SHFT_LEFT": 2, "DATA_MASK": 0x03},
+            "KSL Sens1":            {"BYTE":  7, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0xfc},
 
             # [ 8]: OP1:Depth Of Amp Modulation 111 | Enable Amp Modulation 0 | Depth Of Vibrate 111 | Enable Vibrate 0
-            "Depth Of Amp Modulation1":               {"BYTE":  8, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
-            "Enable Amp Modulation1":                 {"BYTE":  8, "SELF_MASK": 0x01, "SHFT_LEFT": 4, "DATA_MASK": 0xef},
-            "Depth Of Vibrate1":                      {"BYTE":  8, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
-            "Enable Vibrate1":                        {"BYTE":  8, "SELF_MASK": 0x01, "SHFT_LEFT": 0, "DATA_MASK": 0xfe},
+            "Depth Of Amp Mod1":               {"BYTE":  8, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
+            "Enable Amp Mod1":                 {"BYTE":  8, "SELF_MASK": 0x01, "SHFT_LEFT": 4, "DATA_MASK": 0xef},
+            "Depth Of Vib1":                      {"BYTE":  8, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
+            "Enable Vib1":                        {"BYTE":  8, "SELF_MASK": 0x01, "SHFT_LEFT": 0, "DATA_MASK": 0xfe},
 
                 # [ 9]: OP1:Multi Control Magnification Frequency 1111 | Detune 0000
-            "Multi Control Magnification Frequency1": {"BYTE":  9, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "MCMFreq1": {"BYTE":  9, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
             "Detune1":                                {"BYTE":  9, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
 
             # [10]: OP1:Wave Shape 11111 | FM Feedback Level 000
             "Wave Shape1":                            {"BYTE": 10, "SELF_MASK": 0x1f, "SHFT_LEFT": 3, "DATA_MASK": 0x07},
-            "FM Feedback Level1":                     {"BYTE": 10, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
+            "Feedback Lv1":                     {"BYTE": 10, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
             ##OP2
             # [11]: OP2:Sustain Rate 1111 | Ignore Key Off 0 | Key Scale Sensitivity 111
-            "Sustain Rate2":                          {"BYTE": 11, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
-            "Ignore Key Off2":                        {"BYTE": 11, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
-            "Key Scale Sensitivity2":                 {"BYTE": 11, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
+            "Sus R2":                          {"BYTE": 11, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Ign Key Off2":                        {"BYTE": 11, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
+            "Key Scale Sens2":                 {"BYTE": 11, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
             # [12]: OP2:Release Rate 1111 | Decay Rate 0000
-            "Release Rate2":                          {"BYTE": 12, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
-            "Decay Rate2":                            {"BYTE": 12, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
+            "Release R2":                          {"BYTE": 12, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Decay R2":                            {"BYTE": 12, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
 
             # [13]: OP2:Attack Rate 1111 | Sustain Level 0000
-            "Attack Rate2":                           {"BYTE": 13, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
-            "Sustain Level2":                         {"BYTE": 13, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
+            "Attack R2":                           {"BYTE": 13, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Sus Level2":                         {"BYTE": 13, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
 
             # [14]: OP2:Total Operator Level 111111 | Key Scale Level Sensivitiy 00
-            "Total Operator Level2":                  {"BYTE": 14, "SELF_MASK": 0x3f, "SHFT_LEFT": 2, "DATA_MASK": 0x03},
-            "Key Scale Level Sensivitiy2":            {"BYTE": 14, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0xfc},
+            "Operator Lv2":                  {"BYTE": 14, "SELF_MASK": 0x3f, "SHFT_LEFT": 2, "DATA_MASK": 0x03},
+            "KSL Sens2":            {"BYTE": 14, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0xfc},
 
             # [15]: OP2:Depth Of Amp Modulation 111 | Enable Amp Modulation 0 | Depth Of Vibrate 111 | Enable Vibrate 0
-            "Depth Of Amp Modulation2":               {"BYTE": 15, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
-            "Enable Amp Modulation2":                 {"BYTE": 15, "SELF_MASK": 0x01, "SHFT_LEFT": 4, "DATA_MASK": 0xef},
-            "Depth Of Vibrate2":                      {"BYTE": 15, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
-            "Enable Vibrate2":                        {"BYTE": 15, "SELF_MASK": 0x01, "SHFT_LEFT": 0, "DATA_MASK": 0xfe},
+            "Depth Of Amp Mod2":               {"BYTE": 15, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
+            "Enable Amp Mod2":                 {"BYTE": 15, "SELF_MASK": 0x01, "SHFT_LEFT": 4, "DATA_MASK": 0xef},
+            "Depth Of Vib2":                      {"BYTE": 15, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
+            "Enable Vib2":                        {"BYTE": 15, "SELF_MASK": 0x01, "SHFT_LEFT": 0, "DATA_MASK": 0xfe},
 
             # [16]: OP2:Multi Control Magnification Frequency 1111 | Detune 0000
-            "Multi Control Magnification Frequency2": {"BYTE": 16, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "MCMFreq2": {"BYTE": 16, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
             "Detune2":                                {"BYTE": 16, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
 
             # [17]: OP2:Wave Shape 11111 | FM Feedback Level 000
             "Wave Shape2":                            {"BYTE": 17, "SELF_MASK": 0x1f, "SHFT_LEFT": 3, "DATA_MASK": 0x07},
-            "FM Feedback Level2":                     {"BYTE": 17, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
+            "Feedback Lv2":                     {"BYTE": 17, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
             ##OP3
             # [18]: OP3:Sustain Rate 1111 | Ignore Key Off 0 | Key Scale Sensitivity 111
-            "Sustain Rate3":                          {"BYTE": 18, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
-            "Ignore Key Off3":                        {"BYTE": 18, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
-            "Key Scale Sensitivity3":                 {"BYTE": 18, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
+            "Sus R3":                          {"BYTE": 18, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Ign Key Off3":                        {"BYTE": 18, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
+            "Key Scale Sens3":                 {"BYTE": 18, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
             # [19]: OP3:Release Rate 1111 | Decay Rate 0000
-            "Release Rate3":                          {"BYTE": 19, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
-            "Decay Rate3":                            {"BYTE": 19, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
+            "Release R3":                          {"BYTE": 19, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Decay R3":                            {"BYTE": 19, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
 
             # [20]: OP3:Attack Rate 1111 | Sustain Level 0000
-            "Attack Rate3":                           {"BYTE": 20, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
-            "Sustain Level3":                         {"BYTE": 20, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
+            "Attack R3":                           {"BYTE": 20, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Sus Level3":                         {"BYTE": 20, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
 
             # [21]: OP3:Total Operator Level 111111 | Key Scale Level Sensivitiy 00
-            "Total Operator Level3":                  {"BYTE": 21, "SELF_MASK": 0x3f, "SHFT_LEFT": 2, "DATA_MASK": 0x03},
-            "Key Scale Level Sensivitiy3":            {"BYTE": 21, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0xfc},
+            "Operator Lv3":                  {"BYTE": 21, "SELF_MASK": 0x3f, "SHFT_LEFT": 2, "DATA_MASK": 0x03},
+            "KSL Sens3":            {"BYTE": 21, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0xfc},
 
             # [22]: OP3:Depth Of Amp Modulation 111 | Enable Amp Modulation 0 | Depth Of Vibrate 111 | Enable Vibrate 0
-            "Depth Of Amp Modulation3":               {"BYTE": 22, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
-            "Enable Amp Modulation3":                 {"BYTE": 22, "SELF_MASK": 0x01, "SHFT_LEFT": 4, "DATA_MASK": 0xef},
-            "Depth Of Vibrate3":                      {"BYTE": 22, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
-            "Enable Vibrate3":                        {"BYTE": 22, "SELF_MASK": 0x01, "SHFT_LEFT": 0, "DATA_MASK": 0xfe},
+            "Depth Of Amp Mod3":               {"BYTE": 22, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
+            "Enable Amp Mod3":                 {"BYTE": 22, "SELF_MASK": 0x01, "SHFT_LEFT": 4, "DATA_MASK": 0xef},
+            "Depth Of Vib3":                      {"BYTE": 22, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
+            "Enable Vib3":                        {"BYTE": 22, "SELF_MASK": 0x01, "SHFT_LEFT": 0, "DATA_MASK": 0xfe},
 
             # [23]: OP3:Multi Control Magnification Frequency 1111 | Detune 0000
-            "Multi Control Magnification Frequency3": {"BYTE": 23, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "MCMFreq3": {"BYTE": 23, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
             "Detune3":                                {"BYTE": 23, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
 
             # [24]: OP3:Wave Shape 11111 | FM Feedback Level 000
             "Wave Shape3":                            {"BYTE": 24, "SELF_MASK": 0x1f, "SHFT_LEFT": 3, "DATA_MASK": 0x07},
-            "FM Feedback Level3":                     {"BYTE": 24, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
+            "Feedback Lv3":                     {"BYTE": 24, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
             ##OP4
             # [25]: OP4:Sustain Rate 1111 | Ignore Key Off 0 | Key Scale Sensitivity 111
-            "Sustain Rate4":                          {"BYTE": 25, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
-            "Ignore Key Off4":                        {"BYTE": 25, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
-            "Key Scale Sensitivity4":                 {"BYTE": 25, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
+            "Sus R4":                          {"BYTE": 25, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Ign Key Off4":                        {"BYTE": 25, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
+            "Key Scale Sens4":                 {"BYTE": 25, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
             # [26]: OP4:Release Rate 1111 | Decay Rate 0000
-            "Release Rate4":                          {"BYTE": 26, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
-            "Decay Rate4":                            {"BYTE": 26, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
+            "Release R4":                          {"BYTE": 26, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Decay R4":                            {"BYTE": 26, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
 
             # [27]: OP4:Attack Rate 1111 | Sustain Level 0000
-            "Attack Rate4":                           {"BYTE": 27, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
-            "Sustain Level4":                         {"BYTE": 27, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
+            "Attack R4":                           {"BYTE": 27, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "Sus Level4":                         {"BYTE": 27, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
 
             # [28]: OP4:Total Operator Level 111111 | Key Scale Level Sensivitiy 00
-            "Total Operator Level4":                  {"BYTE": 28, "SELF_MASK": 0x3f, "SHFT_LEFT": 2, "DATA_MASK": 0x03},
-            "Key Scale Level Sensivitiy4":            {"BYTE": 28, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0xfc},
+            "Operator Lv4":                  {"BYTE": 28, "SELF_MASK": 0x3f, "SHFT_LEFT": 2, "DATA_MASK": 0x03},
+            "KSL Sens4":            {"BYTE": 28, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0xfc},
 
             # [29]: OP4:Depth Of Amp Modulation 111 | Enable Amp Modulation 0 | Depth Of Vibrate 111 | Enable Vibrate 0
-            "Depth Of Amp Modulation4":               {"BYTE": 29, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
-            "Enable Amp Modulation4":                 {"BYTE": 29, "SELF_MASK": 0x01, "SHFT_LEFT": 4, "DATA_MASK": 0xef},
-            "Depth Of Vibrate4":                      {"BYTE": 29, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
-            "Enable Vibrate4":                        {"BYTE": 29, "SELF_MASK": 0x01, "SHFT_LEFT": 0, "DATA_MASK": 0xfe},
+            "Depth Of Amp Mod4":               {"BYTE": 29, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
+            "Enable Amp Mod4":                 {"BYTE": 29, "SELF_MASK": 0x01, "SHFT_LEFT": 4, "DATA_MASK": 0xef},
+            "Depth Of Vib4":                      {"BYTE": 29, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
+            "Enable Vib4":                        {"BYTE": 29, "SELF_MASK": 0x01, "SHFT_LEFT": 0, "DATA_MASK": 0xfe},
 
             # [30]: OP4:Multi Control Magnification Frequency 1111 | Detune 0000
-            "Multi Control Magnification Frequency4": {"BYTE": 30, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
+            "MCMFreq4": {"BYTE": 30, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
             "Detune4":                                {"BYTE": 30, "SELF_MASK": 0x0f, "SHFT_LEFT": 0, "DATA_MASK": 0xf0},
 
             # [31]: OP4:Wave Shape 11111 | FM Feedback Level 000
             "Wave Shape4":                            {"BYTE": 31, "SELF_MASK": 0x1f, "SHFT_LEFT": 3, "DATA_MASK": 0x07},
-            "FM Feedback Level4":                     {"BYTE": 31, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8}
+            "Feedback Lv4":                     {"BYTE": 31, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8}
         }
         
         # Sustain pedal control

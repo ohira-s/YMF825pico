@@ -36,6 +36,7 @@
 #   01.001 2023/09/04: Databank available
 #   01.100 2023/09/06: Sequencer available
 #   01.200 2023/09/08: Equalizer available
+#   01.210 2023/09/12: GUI for operator volumes and ADSSR
 #############################################################################
 
 from ymf825pico import ymf825pico_class
@@ -60,6 +61,7 @@ I2C_SSD1306_SCL = 21    # Pin25
 DISPLAY_WIDTH = 128
 DISPLAY_HEIGHT = 64
 DISPLAT_HALF_WIDTH = int(DISPLAY_WIDTH / 2)
+DISPLAT_QUOT_WIDTH = int(DISPLAY_WIDTH / 4)
 DISPLAY_DIVIDE = 83
 DISPLAY_LINE_HEIGHT = 10
 DISPLAY_MENU_LINES= 4
@@ -77,99 +79,99 @@ ROTARY_ENCODERS = [
     {"NO": 3, "A_PIN": 8, "B_PIN": 9, "A_SW": None, "B_SW": None, "A_PREV": 2, "B_PREV": 2, "VALUES": [0,0,0,0]}   # Pin11, 12
 ]
 
-# Timbre portion's volumes
+# Timbre portion's volumes10/2go,10/3event,10/4back
 timbre_volumes = [1.0] * 4
 
 # YMF825 parameters mapping and order (ABBR, REAL KEY NAME, VALUE RANGE)
 PARM_TEXT_OFF_ON = ["OFF", "ON"]
-PARM_TEXT_ALGO = ["Ab", "A+b", "AbCd+", "A+bc", "Abcd", "Ab+Cd", "A+bcd", "A+bc+d"]
+PARM_TEXT_ALGO = ["Ab", "A+b", "A+b+C+d", "(A+bc)d", "Abcd", "Ab+Cd", "A+bcd", "A+bc+d"]
 PARM_TEXT_WAVE = [
-    "SIN",   "SIN/2", "SINSN", "SAILs",
-    "SIN*2", "S*2/2", "SQUAR", "RIBBN",
-    "SINcp", "Scp/2", "ScpSc", "SAILc",
-    "Scp*2", "Sc2/2", "SQR/2", "-----",
-    "TRIAN", "TRI/2", "TRITR", "SAILt",
-    "TRI*2", "TR2/2", "SQR*2", "-----",
-    "RAMP",  "RMP/2", "RMPRP", "SAILr",
-    "RMP*2", "RRM/2", "SQ2/2", "-----"
+    "SIN",     "plusSIN", "asbSIN",  "SAIL*2",
+    "SIN2x",   "absSN2x", "SQUARE",  "RIBBON",
+    "SINcomp", "plusScp", "absScmp", "SAILcmp",
+    "SIN2xCp", "plsS2cp", "plusSQR", "-------",
+    "TRIANGL", "plusTRI", "absTRIA", "absTRIh",
+    "TRIAN2x", "plsTR2x", "plsSQR2", "-----",
+    "SAW",     "plusSAW", "absSAW",  "absSAWc",
+    "SAW2x",   "absSAW2", "SQUAR/4", "-------"
 ]
 YMF825_PARM = [
     # GENERAL
-    ("Basic OCT", "Basic Octave", 4, None),
+    ("Basic OCT", "Basic Oct", 4, None),
     ("Algorithm", "Algorithm", 8, PARM_TEXT_ALGO),
     ("LFO", "LFO", 8, None),
     # OP1
     ("Wave Shp A", "Wave Shape1", 32, PARM_TEXT_WAVE),
-    ("Total LV A", "Total Operator Level1", 32, None),
-    ("Feedback A", "FM Feedback Level1", 8, None),
+    ("Total LV A", "Operator Lv1", 32, None),
+    ("Feedback A", "Feedback Lv1", 8, None),
     ("Detune   A", "Detune1", 8, None),
-    ("MCM Freq A", "Multi Control Magnification Frequency1", 16, None),
-    ("Atack RT A", "Attack Rate1", 16, None),
-    ("Decay RT A", "Decay Rate1", 16, None),
-    ("Sustn LV A", "Sustain Level1", 16, None),
-    ("Sustn RT A", "Sustain Rate1", 16, None),
-    ("Reles RT A", "Release Rate1", 16, None),
-    ("Vibrt EN A", "Enable Vibrate1", 2, PARM_TEXT_OFF_ON),
-    ("Vibrt DP A", "Depth Of Vibrate1", 4, None),
-    ("Amp M EN A", "Enable Amp Modulation1", 2, PARM_TEXT_OFF_ON),
-    ("Amp M DP A", "Depth Of Amp Modulation1", 4, None),
-    ("Key S EN A", "Key Scale Sensitivity1", 2, PARM_TEXT_OFF_ON),
-    ("Key S LV A", "Key Scale Level Sensivitiy1", 4, None),
-    ("IgnKy OF A", "Ignore Key Off1", 2, PARM_TEXT_OFF_ON),
+    ("MCM Freq A", "MCMFreq1", 16, None),
+    ("Atack RT A", "Attack R1", 16, None),
+    ("Decay RT A", "Decay R1", 16, None),
+    ("Sustn LV A", "Sus Level1", 16, None),
+    ("Sustn RT A", "Sus R1", 16, None),
+    ("Reles RT A", "Release R1", 16, None),
+    ("Vibrt EN A", "Enable Vib1", 2, PARM_TEXT_OFF_ON),
+    ("Vibrt DP A", "Depth Of Vib1", 4, None),
+    ("Amp M EN A", "Enable Amp Mod1", 2, PARM_TEXT_OFF_ON),
+    ("Amp M DP A", "Depth Of Amp Mod1", 4, None),
+    ("Key S EN A", "Key Scale Sens1", 2, PARM_TEXT_OFF_ON),
+    ("Key S LV A", "KSL Sens1", 4, None),
+    ("IgnKy OF A", "Ign Key Off1", 2, PARM_TEXT_OFF_ON),
     # OP2
     ("Wave Shp B", "Wave Shape2", 32, PARM_TEXT_WAVE),
-    ("Total LV B", "Total Operator Level2", 32, None),
-    ("Feedback B", "FM Feedback Level2", 8, None),
+    ("Total LV B", "Operator Lv2", 32, None),
+    ("Feedback B", "Feedback Lv2", 8, None),
     ("Detune   B", "Detune2", 8, None),
-    ("MCM Freq B", "Multi Control Magnification Frequency2", 16, None),
-    ("Atack RT B", "Attack Rate2", 16, None),
-    ("Decay RT B", "Decay Rate2", 16, None),
-    ("Sustn LV B", "Sustain Level2", 16, None),
-    ("Sustn RT B", "Sustain Rate2", 16, None),
-    ("Reles RT B", "Release Rate2", 16, None),
-    ("Vibrt EN B", "Enable Vibrate2", 2, PARM_TEXT_OFF_ON),
-    ("Vibrt DP B", "Depth Of Vibrate2", 4, None),
-    ("Amp M EN B", "Enable Amp Modulation2", 2, PARM_TEXT_OFF_ON),
-    ("Amp M DP B", "Depth Of Amp Modulation2", 4, None),
-    ("Key S EN B", "Key Scale Sensitivity2", 2, PARM_TEXT_OFF_ON),
-    ("Key S LV B", "Key Scale Level Sensivitiy2", 4, None),
-    ("IgnKy OF B", "Ignore Key Off2", 2, PARM_TEXT_OFF_ON),
+    ("MCM Freq B", "MCMFreq2", 16, None),
+    ("Atack RT B", "Attack R2", 16, None),
+    ("Decay RT B", "Decay R2", 16, None),
+    ("Sustn LV B", "Sus Level2", 16, None),
+    ("Sustn RT B", "Sus R2", 16, None),
+    ("Reles RT B", "Release R2", 16, None),
+    ("Vibrt EN B", "Enable Vib2", 2, PARM_TEXT_OFF_ON),
+    ("Vibrt DP B", "Depth Of Vib2", 4, None),
+    ("Amp M EN B", "Enable Amp Mod2", 2, PARM_TEXT_OFF_ON),
+    ("Amp M DP B", "Depth Of Amp Mod2", 4, None),
+    ("Key S EN B", "Key Scale Sens2", 2, PARM_TEXT_OFF_ON),
+    ("Key S LV B", "KSL Sens2", 4, None),
+    ("IgnKy OF B", "Ign Key Off2", 2, PARM_TEXT_OFF_ON),
     # OP3
     ("Wave Shp C", "Wave Shape3", 32, PARM_TEXT_WAVE),
-    ("Total LV C", "Total Operator Level3", 32, None),
-    ("Feedback C", "FM Feedback Level3", 8, None),
+    ("Total LV C", "Operator Lv3", 32, None),
+    ("Feedback C", "Feedback Lv3", 8, None),
     ("Detune   C", "Detune3", 8, None),
-    ("MCM Freq C", "Multi Control Magnification Frequency3", 16, None),
-    ("Atack RT C", "Attack Rate3", 16, None),
-    ("Decay RT C", "Decay Rate3", 16, None),
-    ("Sustn LV C", "Sustain Level3", 16, None),
-    ("Sustn RT C", "Sustain Rate3", 16, None),
-    ("Reles RT C", "Release Rate3", 16, None),
-    ("Vibrt EN C", "Enable Vibrate3", 2, PARM_TEXT_OFF_ON),
-    ("Vibrt DP C", "Depth Of Vibrate3", 4, None),
-    ("Amp M EN C", "Enable Amp Modulation3", 2, PARM_TEXT_OFF_ON),
-    ("Amp M DP C", "Depth Of Amp Modulation3", 4, None),
-    ("Key S EN C", "Key Scale Sensitivity3", 2, PARM_TEXT_OFF_ON),
-    ("Key S LV C", "Key Scale Level Sensivitiy3", 4, None),
-    ("IgnKy OF C", "Ignore Key Off3", 2, PARM_TEXT_OFF_ON),
+    ("MCM Freq C", "MCMFreq3", 16, None),
+    ("Atack RT C", "Attack R3", 16, None),
+    ("Decay RT C", "Decay R3", 16, None),
+    ("Sustn LV C", "Sus Level3", 16, None),
+    ("Sustn RT C", "Sus R3", 16, None),
+    ("Reles RT C", "Release R3", 16, None),
+    ("Vibrt EN C", "Enable Vib3", 2, PARM_TEXT_OFF_ON),
+    ("Vibrt DP C", "Depth Of Vib3", 4, None),
+    ("Amp M EN C", "Enable Amp Mod3", 2, PARM_TEXT_OFF_ON),
+    ("Amp M DP C", "Depth Of Amp Mod3", 4, None),
+    ("Key S EN C", "Key Scale Sens3", 2, PARM_TEXT_OFF_ON),
+    ("Key S LV C", "KSL Sens3", 4, None),
+    ("IgnKy OF C", "Ign Key Off3", 2, PARM_TEXT_OFF_ON),
     # OP4
     ("Wave Shp D", "Wave Shape4", 32, PARM_TEXT_WAVE),
-    ("Total LV D", "Total Operator Level4", 32, None),
-    ("Feedback D", "FM Feedback Level4", 8, None),
+    ("Total LV D", "Operator Lv4", 32, None),
+    ("Feedback D", "Feedback Lv4", 8, None),
     ("Detune   D", "Detune4", 8, None),
-    ("MCM Freq D", "Multi Control Magnification Frequency4", 16, None),
-    ("Atack RT D", "Attack Rate4", 16, None),
-    ("Decay RT D", "Decay Rate4", 16, None),
-    ("Sustn LV D", "Sustain Level4", 16, None),
-    ("Sustn RT D", "Sustain Rate4", 16, None),
-    ("Reles RT D", "Release Rate4", 16, None),
-    ("Vibrt EN D", "Enable Vibrate4", 2, PARM_TEXT_OFF_ON),
-    ("Vibrt DP D", "Depth Of Vibrate4", 4, None),
-    ("Amp M EN D", "Enable Amp Modulation4", 2, PARM_TEXT_OFF_ON),
-    ("Amp M DP D", "Depth Of Amp Modulation4", 4, None),
-    ("Key S EN D", "Key Scale Sensitivity4", 2, PARM_TEXT_OFF_ON),
-    ("Key S LV D", "Key Scale Level Sensivitiy4", 4, None),
-    ("IgnKy OF D", "Ignore Key Off4", 2, PARM_TEXT_OFF_ON),
+    ("MCM Freq D", "MCMFreq4", 16, None),
+    ("Atack RT D", "Attack R4", 16, None),
+    ("Decay RT D", "Decay R4", 16, None),
+    ("Sustn LV D", "Sus Level4", 16, None),
+    ("Sustn RT D", "Sus R4", 16, None),
+    ("Reles RT D", "Release R4", 16, None),
+    ("Vibrt EN D", "Enable Vib4", 2, PARM_TEXT_OFF_ON),
+    ("Vibrt DP D", "Depth Of Vib4", 4, None),
+    ("Amp M EN D", "Enable Amp Mod4", 2, PARM_TEXT_OFF_ON),
+    ("Amp M DP D", "Depth Of Amp Mod4", 4, None),
+    ("Key S EN D", "Key Scale Sens4", 2, PARM_TEXT_OFF_ON),
+    ("Key S LV D", "KSL Sens4", 4, None),
+    ("IgnKy OF D", "Ign Key Off4", 2, PARM_TEXT_OFF_ON),
 ]
 
 # Character list
@@ -184,6 +186,8 @@ menu_main = 0
 menu_category = 0
 menu_item = 0
 menu_value = 0
+gui_item_menu = None
+gui_item_menu_exit = None
 
 #--- YMF825pico menu definitions
 # MAIN:PLAY
@@ -219,15 +223,187 @@ EQUALIZER_NAME_LENGTH = 10
 # MAIN:EQUALIZER EDIT
 MAIN_MENU_EQUALIZER_EDIT = 7
 
+
+# Edit the tone volume related parameters with GUI
+def gui_tone_edit_volumes(gui):
+    global menu_main, menu_category, menu_item, menu_value
+    global gui_item_menu
+    
+#    print("GUI EDITOR: TONE VOLUMES:", menu_item, gui)
+    gui_item_menu = gui["items"]
+    for ui in list(range(len(gui_item_menu))):  
+        # Show the current editing VALUE
+        i = gui["items"][ui]
+        if i == menu_item:
+#            print("main, category, item, value=", menu_main, menu_category, i, menu_value)
+            value_name = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["VALUE"][menu_value]["name"]
+        # Show the selected VALUE
+        else:
+            selected = int(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["selected"])
+#            print("MENU:", menu_main, menu_category, i, selected)
+            value_name = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["VALUE"][selected]["name"]
+
+#        print("SHOW=", value_name)
+        disp = gui["disp"][ui]
+        display.text(disp[0], disp[1], disp[2], True)
+        display.text(value_name[:6], disp[1] + 16, disp[2], True)
+        if i == menu_item:
+            display.hline(disp[1], disp[2] + DISPLAY_LINE_HEIGHT - 2, DISPLAT_QUOT_WIDTH, True)
+
+    display.vline(DISPLAT_HALF_WIDTH, DISPLAY_LINE_HEIGHT * 2 - 2, DISPLAY_HEIGHT - (DISPLAY_LINE_HEIGHT * 2 - 2), True)
+    display.hline(0, DISPLAY_LINE_HEIGHT * 4 + 1, DISPLAY_WIDTH, True)
+
+
+# Edit the tone ADSSL parameters with GUI
+def gui_tone_edit_adssls(gui):
+    global menu_main, menu_category, menu_item, menu_value
+    global gui_item_menu
+    
+    print("GUI EDITOR: TONE ADSSLs:", menu_item, gui)
+    gui_item_menu = gui["items"]
+    parmstr = ["AT", "DC", "SL", "SR", "RR"]
+    px = [0, 0, 0, 0, 0]
+    py = [0, 0, 0, 0, 0]
+    for ui in list(range(len(gui_item_menu))):  
+        base = int(ui / 5)
+        offset = ui % 5
+
+        # Show the current editing VALUE
+        i = gui["items"][ui]
+        if i == menu_item:
+#            print("main, category, item, value=", menu_main, menu_category, i, menu_value)
+            value_parm = menu_value
+        # Show the selected VALUE
+        else:
+            value_parm = int(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["selected"])
+#            print("MENU:", menu_main, menu_category, i, value_parm)
+
+#        print("SHOW=", value_parm, "OP=", base)
+        base_x = (0 if base % 2 == 0 else DISPLAT_HALF_WIDTH + 2) + 25
+        base_y = DISPLAY_LINE_HEIGHT * (4 + (2 if base >= 2 else 0)) + (1 if base >= 2 else -1)
+
+        # Attack
+        if offset == 0:
+#            print("AT=", value_parm)
+            px[1] = (15 - value_parm) / 15.0
+            py[1] = 1.0
+        # Decay
+        elif offset == 1:
+#            print("DC=", value_parm)
+            px[2] = (15 - value_parm) / 15.0
+        # Sustine level
+        elif offset == 2:
+#            print("SL=", value_parm)
+            py[2] = py[1] - value_parm / 15.0
+        # Sustain rate
+        elif offset == 3:
+#            print("SR=", value_parm)
+            px[3] = 1.0
+            py[3] = py[2] * (15 - value_parm) / 30.0
+        elif offset == 4:
+#            print("RR=", value_parm)
+            px[4] = (15 - value_parm) / 15.0
+            py[4] = py[3] if value_parm == 0 else 0
+            x0 = 0
+            y0 = 0
+            for p in list(range(1,5)):
+                x1 = x0 + px[p]
+                y1 = py[p]
+#                print("LINE:",x0, y0, x1, y1)
+                display.line(int(x0 * 8) + base_x, base_y - int(y0 * (DISPLAY_LINE_HEIGHT-1)*2), int(x1 * 8) + base_x, base_y - int(y1 * (DISPLAY_LINE_HEIGHT-1)*2), True)
+                x0 = x1
+                y0 = y1
+
+        disp = [chr(0x41+base)+parmstr[offset], 0 if base % 2 == 0 else DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*2 if base <= 1 else DISPLAY_LINE_HEIGHT*4+4]
+        if i == menu_item:
+            display.text(disp[0], disp[1], disp[2], True)
+            display.text(str(value_parm), disp[1], disp[2] + DISPLAY_LINE_HEIGHT, True)
+            display.hline(disp[1], disp[2] + DISPLAY_LINE_HEIGHT * 2 - 2, int(DISPLAT_QUOT_WIDTH / 2), True)
+
+    display.vline(DISPLAT_HALF_WIDTH, DISPLAY_LINE_HEIGHT * 2 - 2, DISPLAY_HEIGHT - (DISPLAY_LINE_HEIGHT * 2 - 2), True)
+    display.hline(0, DISPLAY_LINE_HEIGHT * 4 + 1, DISPLAY_WIDTH, True)
+
+
+# GUI editor
+'''
+GUI_Wave_Shp_A = 3
+GUI_Total_LV_A = 4
+GUI_MCM_Freq_A = 7
+GUI_Wave_Shp_B = 20
+GUI_Total_LV_B = 21
+GUI_MCM_Freq_B = 24
+GUI_Wave_Shp_C = 37
+GUI_Total_LV_C = 38
+GUI_MCM_Freq_C = 41
+GUI_Wave_Shp_D = 54
+GUI_Total_LV_D = 55
+GUI_MCM_Freq_D = 58
+'''
+'''
+GUI_Atack_RT_A = 8
+GUI_Decay_RT_A = 9
+GUI_Sustn_LV_A = 10
+GUI_Sustn_RT_A = 11
+GUI_Reles_RT_A = 12
+GUI_Atack_RT_B = 25
+GUI_Decay_RT_B = 26
+GUI_Sustn_LV_B = 27
+GUI_Sustn_RT_B = 28
+GUI_Reles_RT_B = 29
+GUI_Atack_RT_C = 42
+GUI_Decay_RT_C = 43
+GUI_Sustn_LV_C = 44
+GUI_Sustn_RT_C = 45
+GUI_Reles_RT_C = 46
+GUI_Atack_RT_D = 59
+GUI_Decay_RT_D = 60
+GUI_Sustn_LV_D = 61
+GUI_Sustn_RT_D = 62
+GUI_Reles_RT_D = 63
+'''
+
+GUI_EDITOR = [
+#    {"items": [GUI_Wave_Shp_A, GUI_Total_LV_A, GUI_MCM_Freq_A, GUI_Wave_Shp_B, GUI_Total_LV_B, GUI_MCM_Freq_B, GUI_Wave_Shp_C, GUI_Total_LV_C, GUI_MCM_Freq_C, GUI_Wave_Shp_D, GUI_Total_LV_D, GUI_MCM_Freq_D],
+    {"items": [3, 4, 7, 20, 21, 24, 37, 38, 41, 54, 55, 58],
+     "func": gui_tone_edit_volumes,
+     "disp": [
+         ("A:", 0, DISPLAY_LINE_HEIGHT*2), ("V::", 0, DISPLAY_LINE_HEIGHT*3), ("F:", DISPLAT_QUOT_WIDTH, DISPLAY_LINE_HEIGHT*3),
+         ("B:", DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*2), ("V:", DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*3), ("F:", DISPLAT_HALF_WIDTH+DISPLAT_QUOT_WIDTH+2, DISPLAY_LINE_HEIGHT*3),
+         ("C:", 0, DISPLAY_LINE_HEIGHT*4+4), ("V:", 0, DISPLAY_LINE_HEIGHT*5+4), ("F:", DISPLAT_QUOT_WIDTH, DISPLAY_LINE_HEIGHT*5+4),
+         ("D:", DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*4+4), ("V:", DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*5+4), ("F:", DISPLAT_HALF_WIDTH+DISPLAT_QUOT_WIDTH+2, DISPLAY_LINE_HEIGHT*5+4)
+              ]
+    },
+#    {"items": [GUI_Atack_RT_A, GUI_Decay_RT_A, GUI_Sustn_LV_A, GUI_Sustn_RT_A, GUI_Reles_RT_A, GUI_Atack_RT_B, GUI_Decay_RT_B, GUI_Sustn_LV_B, GUI_Sustn_RT_B, GUI_Reles_RT_B, GUI_Atack_RT_C, GUI_Decay_RT_C, GUI_Sustn_LV_C, GUI_Sustn_RT_C, GUI_Reles_RT_C, GUI_Atack_RT_D, GUI_Decay_RT_D, GUI_Sustn_LV_D, GUI_Sustn_RT_D, GUI_Reles_RT_D],
+    {"items": [8, 9, 10, 11, 12, 25, 26, 27, 28, 29, 42, 43, 44, 45, 46, 59, 60, 61, 62, 63],
+     "func": gui_tone_edit_adssls,
+     "disp": None
+    }
+]
+
+
 # Show menu
 # item_move_dir: 1=item list down, -1=item list up
 # slide: Number of characters to slide the vertical line diveding the item and value regions
 # str_head: True = Get the item string from head / Faluse = from tail
 item_menu_display_start = 0
 def show_menu(item_move_dir, slide=0, str_head=True):
-    global YMF825pico
     global item_menu_display_start
     global menu_main, menu_category, menu_item, menu_value
+    global gui_item_menu, gui_item_menu_exit
+
+    # Get the next menu number of menu_item in gui_items list
+    def get_next_to_gui_editor(gui_items, menu_item):
+        find_next = menu_item
+        for i in list(range(len(gui_items))):
+            if gui_items[i] == find_next:
+                find_next += 1
+                
+        find_prev = menu_item
+        for i in reversed(range(len(gui_items))):
+            if gui_items[i] == find_prev:
+                find_prev -= 1
+                
+        return (find_prev, find_next)
 
 #    print(SYNTH_MENU)
 #    print(menu_main, menu_category, menu_item, menu_value)
@@ -252,9 +428,26 @@ def show_menu(item_move_dir, slide=0, str_head=True):
     display.hline(0, DISPLAY_LINE_HEIGHT - 2, DISPLAY_WIDTH, True)
     display.text(category_name, 0, DISPLAY_LINE_HEIGHT, True)
     display.hline(0, DISPLAY_LINE_HEIGHT * 2 - 2, DISPLAY_WIDTH, True)
-    display.vline(v_divide, DISPLAY_LINE_HEIGHT * 2 - 2, DISPLAY_HEIGHT - (DISPLAY_LINE_HEIGHT * 2 - 2), True)
+    
+    # Use GUI Editor
+    if menu_main == MAIN_MENU_TONE_EDIT:
+        for gui in GUI_EDITOR:
+#            print("GUI CHECK:", menu_item, gui)
+            if menu_item in gui["items"]:
+                if gui_item_menu_exit is None:
+                    gui_item_menu_exit = get_next_to_gui_editor(gui["items"], menu_item)
+                    print("NEXT ITEM MENU=", gui_item_menu_exit)
+
+                gui["func"](gui)
+                display.show()
+                return
+
+    # Text Editor Menu
+    gui_item_menu = None
+    gui_item_menu_exit = None
 
     # Show ITEM and VALUE
+    display.vline(v_divide, DISPLAY_LINE_HEIGHT * 2 - 2, DISPLAY_HEIGHT - (DISPLAY_LINE_HEIGHT * 2 - 2), True)
     items = len(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"])
     if menu_item < DISPLAY_MENU_LINES:
         menu_s = 0
@@ -1272,6 +1465,8 @@ def get_a_rotary_encoder(rte):
 # Get rotary encoders' status
 def get_rotary_encoders():
     global menu_main, menu_category, menu_item, menu_value
+    global gui_item_menu, gui_item_menu_exit
+    global item_menu_display_start
 
     # Rotary encoder pins
     for rte in ROTARY_ENCODERS:
@@ -1331,13 +1526,36 @@ def get_rotary_encoders():
 
             # ITEM
             elif rte["NO"] == 2:
-                menu_len = len(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"])
-                prev_item = menu_item
-                menu_item += count
-                if menu_item < 0:
-                    menu_item = menu_len - 1
-                elif menu_item >= menu_len:
-                    menu_item = 0
+                # Text editor mode
+                if gui_item_menu is None:
+                    menu_len = len(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"])
+                    prev_item = menu_item
+                    menu_item += count
+                    if menu_item < 0:
+                        menu_item = menu_len - 1
+                    elif menu_item >= menu_len:
+                        menu_item = 0
+
+                # GUI editor mode
+                else:
+                    menu_len = len(gui_item_menu)
+                    prev_item = menu_item
+                    item_index = gui_item_menu.index(menu_item)
+#                    print("GUI MODE prev=", prev_item, "item=", menu_item, "index=", item_index, "count=", count, "exit=", gui_item_menu_exit)
+                    item_index += count
+                    if item_index < 0:
+                        menu_item = gui_item_menu_exit[0]
+                        item_menu_display_start = menu_item
+                        gui_item_menu = None
+                        gui_item_menu_exit = None
+
+                    elif item_index >= menu_len:
+                        menu_item = gui_item_menu_exit[1]
+                        item_menu_display_start = menu_item
+                        gui_item_menu = None
+                        gui_item_menu_exit = None
+                    else:
+                        menu_item = gui_item_menu[item_index]
 
                 # on select event
                 if SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["on_select"] is not None:
@@ -1381,7 +1599,7 @@ def get_rotary_encoders():
 
                     # Slide item region to left
                     if menu_main == MAIN_MENU_TONE_EDIT:
-                        slide = 1
+                        slide = 2
                         str_head = True
                     elif menu_main == MAIN_MENU_TIMBRE_EDIT:
                         slide = 5

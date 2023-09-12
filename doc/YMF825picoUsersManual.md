@@ -412,6 +412,9 @@ An OLED display shows you the menus and the values.  THe layout is as below.
           - '+' means a mixer.
           - Ab means the operator-A modulates the operator-b. 
 
+        - If you choose Wave Shape, Total Level and MCM Frequency, you will see a 4 sub panes editor.  You can change these parameters in the same display.
+        - If you choose ADSSL, you will see a 4 sub panes editor.  You can change these parameters in the same display.
+
 
 # **Main: TONE COPY**
 - ## **Category:** ***tone list*** (TONE COPY > ***tone list***)
