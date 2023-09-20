@@ -37,6 +37,9 @@
 #   01.100 2023/09/06: Sequencer available
 #   01.200 2023/09/08: Equalizer available
 #   01.210 2023/09/12: GUI for operator volumes and ADSSR
+#   01.211 2023/09/13: GUI for Algorithm
+#   01.212 2023/09/19: Reduce global variable memory
+#   01.300 2023/09/19: Tones in the timbre can be selected from the other databank
 #############################################################################
 
 from ymf825pico import ymf825pico_class
@@ -103,9 +106,9 @@ YMF825_PARM = [
     # OP1
     ("Wave Shp A", "Wave Shape1", 32, PARM_TEXT_WAVE),
     ("Total LV A", "Operator Lv1", 32, None),
+    ("MCM Freq A", "MCMFreq1", 16, None),
     ("Feedback A", "Feedback Lv1", 8, None),
     ("Detune   A", "Detune1", 8, None),
-    ("MCM Freq A", "MCMFreq1", 16, None),
     ("Atack RT A", "Attack R1", 16, None),
     ("Decay RT A", "Decay R1", 16, None),
     ("Sustn LV A", "Sus Level1", 16, None),
@@ -121,9 +124,9 @@ YMF825_PARM = [
     # OP2
     ("Wave Shp B", "Wave Shape2", 32, PARM_TEXT_WAVE),
     ("Total LV B", "Operator Lv2", 32, None),
+    ("MCM Freq B", "MCMFreq2", 16, None),
     ("Feedback B", "Feedback Lv2", 8, None),
     ("Detune   B", "Detune2", 8, None),
-    ("MCM Freq B", "MCMFreq2", 16, None),
     ("Atack RT B", "Attack R2", 16, None),
     ("Decay RT B", "Decay R2", 16, None),
     ("Sustn LV B", "Sus Level2", 16, None),
@@ -139,9 +142,9 @@ YMF825_PARM = [
     # OP3
     ("Wave Shp C", "Wave Shape3", 32, PARM_TEXT_WAVE),
     ("Total LV C", "Operator Lv3", 32, None),
+    ("MCM Freq C", "MCMFreq3", 16, None),
     ("Feedback C", "Feedback Lv3", 8, None),
     ("Detune   C", "Detune3", 8, None),
-    ("MCM Freq C", "MCMFreq3", 16, None),
     ("Atack RT C", "Attack R3", 16, None),
     ("Decay RT C", "Decay R3", 16, None),
     ("Sustn LV C", "Sus Level3", 16, None),
@@ -157,9 +160,9 @@ YMF825_PARM = [
     # OP4
     ("Wave Shp D", "Wave Shape4", 32, PARM_TEXT_WAVE),
     ("Total LV D", "Operator Lv4", 32, None),
+    ("MCM Freq D", "MCMFreq4", 16, None),
     ("Feedback D", "Feedback Lv4", 8, None),
     ("Detune   D", "Detune4", 8, None),
-    ("MCM Freq D", "MCMFreq4", 16, None),
     ("Atack RT D", "Attack R4", 16, None),
     ("Decay RT D", "Decay R4", 16, None),
     ("Sustn LV D", "Sus Level4", 16, None),
@@ -177,7 +180,7 @@ YMF825_PARM = [
 # Character list
 CHARS_LIST= ["="]   # No change
 CHARS_LIST += [chr(ch) for ch in list(range(0x41,0x5b))]
-#CHARS_LIST += [chr(ch) for ch in list(range(0x61,0x7b))]
+CHARS_LIST += [chr(ch) for ch in list(range(0x61,0x7b))]
 CHARS_LIST += [chr(ch) for ch in list(range(0x30,0x3a))]
 CHARS_LIST += [" "]
 
@@ -259,7 +262,7 @@ def gui_tone_edit_adssls(gui):
     global menu_main, menu_category, menu_item, menu_value
     global gui_item_menu
     
-    print("GUI EDITOR: TONE ADSSLs:", menu_item, gui)
+#    print("GUI EDITOR: TONE ADSSLs:", menu_item, gui)
     gui_item_menu = gui["items"]
     parmstr = ["AT", "DC", "SL", "SR", "RR"]
     px = [0, 0, 0, 0, 0]
@@ -324,56 +327,67 @@ def gui_tone_edit_adssls(gui):
     display.hline(0, DISPLAY_LINE_HEIGHT * 4 + 1, DISPLAY_WIDTH, True)
 
 
-# GUI editor
-'''
-GUI_Wave_Shp_A = 3
-GUI_Total_LV_A = 4
-GUI_MCM_Freq_A = 7
-GUI_Wave_Shp_B = 20
-GUI_Total_LV_B = 21
-GUI_MCM_Freq_B = 24
-GUI_Wave_Shp_C = 37
-GUI_Total_LV_C = 38
-GUI_MCM_Freq_C = 41
-GUI_Wave_Shp_D = 54
-GUI_Total_LV_D = 55
-GUI_MCM_Freq_D = 58
-'''
-'''
-GUI_Atack_RT_A = 8
-GUI_Decay_RT_A = 9
-GUI_Sustn_LV_A = 10
-GUI_Sustn_RT_A = 11
-GUI_Reles_RT_A = 12
-GUI_Atack_RT_B = 25
-GUI_Decay_RT_B = 26
-GUI_Sustn_LV_B = 27
-GUI_Sustn_RT_B = 28
-GUI_Reles_RT_B = 29
-GUI_Atack_RT_C = 42
-GUI_Decay_RT_C = 43
-GUI_Sustn_LV_C = 44
-GUI_Sustn_RT_C = 45
-GUI_Reles_RT_C = 46
-GUI_Atack_RT_D = 59
-GUI_Decay_RT_D = 60
-GUI_Sustn_LV_D = 61
-GUI_Sustn_RT_D = 62
-GUI_Reles_RT_D = 63
-'''
+# Edit the tone Algorithm parameters with GUI
+def gui_tone_edit_algorithm(gui):
+    global menu_main, menu_category, menu_item, menu_value
+    global gui_item_menu
 
+    if menu_item == 1:
+        value_parm = menu_value
+    # Show the selected VALUE
+    else:
+        value_parm = int(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["selected"])
+
+    display.text("Algorithm:{}".format(value_parm), 0, DISPLAY_LINE_HEIGHT * 2, True)
+    if value_parm == 0:
+        display.text("A--b-->", 20, DISPLAY_LINE_HEIGHT * 4, True)
+    elif value_parm == 1:
+        display.text("A--", 20, DISPLAY_LINE_HEIGHT * 3, True)
+        display.text("   +-->", 20, DISPLAY_LINE_HEIGHT * 4, True)
+        display.text("b--", 20, DISPLAY_LINE_HEIGHT * 5, True)
+    elif value_parm == 2:
+        display.text("A--+-->", 20, DISPLAY_LINE_HEIGHT * 3, True)
+        display.text("b--|", 20, DISPLAY_LINE_HEIGHT * 4 - 1, True)
+        display.text("C--|", 20, DISPLAY_LINE_HEIGHT * 5 - 2, True)
+        display.text("d--", 20, DISPLAY_LINE_HEIGHT * 6 - 3, True)
+    elif value_parm == 3:
+        display.text("A-----", 20, DISPLAY_LINE_HEIGHT * 3, True)
+        display.text("      +--d-->", 20, DISPLAY_LINE_HEIGHT * 4, True)
+        display.text("b--c--", 20, DISPLAY_LINE_HEIGHT * 5, True)
+    elif value_parm == 4:
+        display.text("A--b--c--d-->", 20, DISPLAY_LINE_HEIGHT * 4, True)
+    elif value_parm == 5:
+        display.text("A--b--", 20, DISPLAY_LINE_HEIGHT * 3, True)
+        display.text("      +-->", 20, DISPLAY_LINE_HEIGHT * 4, True)
+        display.text("C--d--", 20, DISPLAY_LINE_HEIGHT * 5, True)
+    elif value_parm == 6:
+        display.text("A--------", 20, DISPLAY_LINE_HEIGHT * 3, True)
+        display.text("         +-->", 20, DISPLAY_LINE_HEIGHT * 4, True)
+        display.text("b--c--d--", 20, DISPLAY_LINE_HEIGHT * 5, True)
+    elif value_parm == 7:
+        display.text("   A--", 20, DISPLAY_LINE_HEIGHT * 3, True)
+        display.text("b--c--+-->", 20, DISPLAY_LINE_HEIGHT * 4, True)
+        display.text("   d--", 20, DISPLAY_LINE_HEIGHT * 5, True)
+
+
+# GUI editor definitions
 GUI_EDITOR = [
-#    {"items": [GUI_Wave_Shp_A, GUI_Total_LV_A, GUI_MCM_Freq_A, GUI_Wave_Shp_B, GUI_Total_LV_B, GUI_MCM_Freq_B, GUI_Wave_Shp_C, GUI_Total_LV_C, GUI_MCM_Freq_C, GUI_Wave_Shp_D, GUI_Total_LV_D, GUI_MCM_Freq_D],
-    {"items": [3, 4, 7, 20, 21, 24, 37, 38, 41, 54, 55, 58],
+    # Algorithm
+    {"items": [1],
+     "func": gui_tone_edit_algorithm,
+     "disp": None
+    },
+    # Wave Shape, Total Volume, Multi Control Magnification Frequency
+    {"items": [3, 4, 5, 20, 21, 23, 37, 38, 39, 54, 55, 56],
      "func": gui_tone_edit_volumes,
      "disp": [
-         ("A:", 0, DISPLAY_LINE_HEIGHT*2), ("V::", 0, DISPLAY_LINE_HEIGHT*3), ("F:", DISPLAT_QUOT_WIDTH, DISPLAY_LINE_HEIGHT*3),
-         ("B:", DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*2), ("V:", DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*3), ("F:", DISPLAT_HALF_WIDTH+DISPLAT_QUOT_WIDTH+2, DISPLAY_LINE_HEIGHT*3),
-         ("C:", 0, DISPLAY_LINE_HEIGHT*4+4), ("V:", 0, DISPLAY_LINE_HEIGHT*5+4), ("F:", DISPLAT_QUOT_WIDTH, DISPLAY_LINE_HEIGHT*5+4),
-         ("D:", DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*4+4), ("V:", DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*5+4), ("F:", DISPLAT_HALF_WIDTH+DISPLAT_QUOT_WIDTH+2, DISPLAY_LINE_HEIGHT*5+4)
+         ("A:", 0, DISPLAY_LINE_HEIGHT*2), ("V:", 0, DISPLAY_LINE_HEIGHT*3), ("M:", DISPLAT_QUOT_WIDTH, DISPLAY_LINE_HEIGHT*3),
+         ("B:", DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*2), ("V:", DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*3), ("M:", DISPLAT_HALF_WIDTH+DISPLAT_QUOT_WIDTH+2, DISPLAY_LINE_HEIGHT*3),
+         ("C:", 0, DISPLAY_LINE_HEIGHT*4+4), ("V:", 0, DISPLAY_LINE_HEIGHT*5+4), ("M:", DISPLAT_QUOT_WIDTH, DISPLAY_LINE_HEIGHT*5+4),
+         ("D:", DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*4+4), ("V:", DISPLAT_HALF_WIDTH+2, DISPLAY_LINE_HEIGHT*5+4), ("M:", DISPLAT_HALF_WIDTH+DISPLAT_QUOT_WIDTH+2, DISPLAY_LINE_HEIGHT*5+4)
               ]
     },
-#    {"items": [GUI_Atack_RT_A, GUI_Decay_RT_A, GUI_Sustn_LV_A, GUI_Sustn_RT_A, GUI_Reles_RT_A, GUI_Atack_RT_B, GUI_Decay_RT_B, GUI_Sustn_LV_B, GUI_Sustn_RT_B, GUI_Reles_RT_B, GUI_Atack_RT_C, GUI_Decay_RT_C, GUI_Sustn_LV_C, GUI_Sustn_RT_C, GUI_Reles_RT_C, GUI_Atack_RT_D, GUI_Decay_RT_D, GUI_Sustn_LV_D, GUI_Sustn_RT_D, GUI_Reles_RT_D],
+    # ADSSL
     {"items": [8, 9, 10, 11, 12, 25, 26, 27, 28, 29, 42, 43, 44, 45, 46, 59, 60, 61, 62, 63],
      "func": gui_tone_edit_adssls,
      "disp": None
@@ -476,7 +490,7 @@ def show_menu(item_move_dir, slide=0, str_head=True):
         # Show the selected VALUE
         else:
             selected = int(SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["selected"])
-            print("MENU:", menu_main, menu_category, i, selected)
+#            print("MENU:", menu_main, menu_category, i, selected)
             value_name = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["VALUE"][selected]["name"]
 
 #        print("SHOW=", value_name)
@@ -533,8 +547,6 @@ def clear_menu_memory(prev, clear_category, clear_item, clear_value):
 #--- MAIN MENU: PLAY
 # Make select play menu (PLAY)
 def make_select_play_menu(menu, prev_menu):
-    global YMF825pico
-
     clear_menu_memory(prev_menu, True, True, True)
 
     SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"] = [
@@ -577,8 +589,6 @@ def make_select_play_menu(menu, prev_menu):
 #--- CATEGORY MENU: MANUAL
 # Make select timbre menu (PLAY>MANUAL>timbre list>selelct)
 def make_select_manual_menu(menu, prev_menu):
-    global YMF825pico
-
     clear_menu_memory(prev_menu, False, True, True)
 
     tmb_list = YMF825pico.get_synth_timbre_names()
@@ -593,8 +603,6 @@ def make_select_manual_menu(menu, prev_menu):
 #--- CATEGORY MENU: EQUALIZER
 # Make select demo menu (PLAY>MANUAL>equalizer list>selelct)
 def make_select_equalizer_menu(menu, prev_menun):
-    global YMF825pico
-
     eq_list = YMF825pico.get_synth_equalizer_names()
     SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"][MAIN_MENU_PLAY_EQUALIZER]["ITEM"] = []
     for eq in eq_list:
@@ -619,8 +627,6 @@ def make_select_demo_menu(menu, prev_menu):
 #--- CATEGORY MENU: DATABANK
 # Make select databank menu (PLAY>DATABANK>0..9>selelct)
 def make_select_databank_menu(menu, prev_menu):
-    global YMF825pico
-
     clear_menu_memory(prev_menu, False, True, True)
 
     SYNTH_MENU[MAIN_MENU_PLAY]["CATEGORY"][MAIN_MENU_PLAY_DATABANK]["ITEM"] = []
@@ -630,7 +636,6 @@ def make_select_databank_menu(menu, prev_menu):
 
 # Select a timbre on the menu
 def on_select_timbre():
-    global YMF825pico
     global timbre_volumes
 
     # All notes off
@@ -655,7 +660,6 @@ def on_set_equalizer():
 # Play a demo score
 def on_play_demo(demo=None, clear_menu_value=True):
     global menu_main, menu_category, menu_item, menu_value
-    global YMF825pico
 
     # Play a demo
     if demo is None:
@@ -673,7 +677,6 @@ def on_play_demo(demo=None, clear_menu_value=True):
 current_databank = 0
 def load_current_databank():
     global databank_copy_to, current_databank
-    global YMF825pico
 
     # Load databak
     YMF825pico.set_databank(current_databank)
@@ -687,7 +690,6 @@ def load_current_databank():
 
 def on_change_databank():
     global databank_copy_to, current_databank
-    global YMF825pico
 
     databank = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["name"]
     current_databank = menu_item
@@ -703,16 +705,18 @@ def on_change_databank():
 #--- MAIN MENU: TIMBRE NAME
 # Make edit timbre name menu (TIMBRE>timbre list>timbre name>selelct)
 def make_edit_timbre_name_menu(menu, prev_menu):
-    global YMF825pico
-
     clear_menu_memory(prev_menu, True, True, True)
+
+    values = []
+    for ch in CHARS_LIST:
+        values.append({"name": ch, "on_select": on_change_char, "on_selected": None})
 
     timbre_list = YMF825pico.get_synth_timbre_names()
     SYNTH_MENU[MAIN_MENU_TIMBRE_NAME]["CATEGORY"] = []
     for timbre in timbre_list:
-        values = []
-        for ch in CHARS_LIST:
-            values.append({"name": ch, "on_select": on_change_char, "on_selected": None})
+#        values = []
+#        for ch in CHARS_LIST:
+#            values.append({"name": ch, "on_select": on_change_char, "on_selected": None})
 
         # Current timbre name as ITEM menu
         item = []
@@ -743,7 +747,6 @@ def on_cancel_timbre_name():
 
 # Change a timbre name and save all timbre data
 def on_save_timbre_name():
-    global YMF825pico
     global menu_main, menu_category, menu_item, menu_value
 
     # Change the current tone name
@@ -757,6 +760,7 @@ def on_save_timbre_name():
 
     # Save tone data
     YMF825pico.save_timbre_data()
+    gc.collect()
 
     # Initialize the TONE NAME menu
     make_edit_timbre_name_menu(menu_main, menu_main)
@@ -765,15 +769,22 @@ def on_save_timbre_name():
 
 #--- MAIN MENU: TIMBRE EDIT
 # Make timbre edit menu
+db_values_tone = None
 def make_edit_timbre_edit_menu(menu, prev_menu):
-    global YMF825pico
+    global db_values_tone
 
     clear_menu_memory(prev_menu, True, True, True)
 
+    '''
     tone_list = YMF825pico.get_synth_tone_names()
     values_tone = []
     for tone in tone_list:
         values_tone.append({"name": tone, "on_select": on_change_timbre_edit, "on_selected": None})
+    '''
+    
+    values_databank = []
+    for voice in list(range(10)):
+        values_databank.append({"name": str(voice), "on_select": on_change_timbre_databank, "on_selected": None})
 
     values_voice = []
     for voice in list(range(16)):
@@ -782,6 +793,10 @@ def make_edit_timbre_edit_menu(menu, prev_menu):
     values_volume = []
     for volume in list(range(32)):
         values_volume.append({"name": str(volume), "on_select": on_change_timbre_edit, "on_selected": None})
+
+    if db_values_tone is not None:
+        del db_values_tone
+    db_values_tone = [None] * YMF825pico.DATABANK_MAX
 
     timbre_list = YMF825pico.get_synth_timbre_names()
 #    print("TIMBER LIST:", timbre_list)
@@ -792,7 +807,15 @@ def make_edit_timbre_edit_menu(menu, prev_menu):
         # TIMBER SET ITEM menu
         item = []
         for portion in list(range(YMF825pico.TIMBRE_PORTIONS)):
-            item.append({"name": "TONE{}".format(portion), "on_select": None, "on_selected": None, "selected": YMF825pico.get_timbre_tone(timbre_id, portion), "VALUE": values_tone})
+            db = YMF825pico.get_timbre_databank(timbre_id, portion)
+            item.append({"name": "DATABANK{}".format(portion), "on_select": None, "on_selected": None, "selected": db, "VALUE": values_databank})
+
+            print("DATABANK IS ", timbre_id, portion, db)
+            if db_values_tone[db] is None:
+                db_values_tone[db] = values_tone_names_in_databank(db)
+            item.append({"name": "TONE{}".format(portion), "on_select": None, "on_selected": None, "selected": YMF825pico.get_timbre_tone(timbre_id, portion), "VALUE": db_values_tone[db]})
+#            item.append({"name": "TONE{}".format(portion), "on_select": None, "on_selected": None, "selected": YMF825pico.get_timbre_tone(timbre_id, portion), "VALUE": values_tone})
+
             item.append({"name": "VOICE L{}".format(portion), "on_select": None, "on_selected": None, "selected": YMF825pico.get_timbre_voice_from(timbre_id, portion), "VALUE": values_voice})
             item.append({"name": "VOICE H{}".format(portion), "on_select": None, "on_selected": None, "selected": YMF825pico.get_timbre_voice_to(timbre_id, portion), "VALUE": values_voice})
             item.append({"name": "VOLUME{}".format(portion), "on_select": None, "on_selected": None, "selected": YMF825pico.get_timbre_volume(timbre_id, portion), "VALUE": values_volume})
@@ -803,10 +826,54 @@ def make_edit_timbre_edit_menu(menu, prev_menu):
         SYNTH_MENU[MAIN_MENU_TIMBRE_EDIT]["CATEGORY"].append({"name": timbre, "on_select": None, "on_selected": None, "ITEM": item})
         timbre_id += 1
 
+    gc.collect()
+
 
 def on_change_timbre_edit():
     global menu_main, menu_category, menu_item, menu_value
     SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"] = menu_value
+
+
+def values_tone_names_in_databank(databank):
+    global menu_main, menu_category, menu_item, menu_value
+
+    #  SOS: Load tone name list in the databank
+    print("DATABANK = ", databank)
+    try:
+        file = open( "YMF825ToneName" + str(databank) + ".txt", encoding = YMF825pico.file_encode )
+    except OSError as e:
+        print(e)
+        tone_list = []
+    else:
+        tone_list = json.load(file)
+        file.close()
+        
+    file = None
+    gc.collect()
+
+    # Set value list for the timbre portion
+    values_tone = []
+    for tone in tone_list:
+        values_tone.append({"name": tone, "on_select": on_change_timbre_edit, "on_selected": None})
+
+    return values_tone
+
+
+def on_change_timbre_databank():
+    global db_values_tone
+    global menu_main, menu_category, menu_item, menu_value
+    print("TIMBRE PORTION, DATABANK=", menu_item, menu_value)
+    
+    # Selected databank
+    SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"] = menu_value
+
+    # New tone list
+    if db_values_tone[menu_value] is None:
+        db_values_tone[menu_value] = values_tone_names_in_databank(menu_value)
+
+    # Clear the current tone list
+    SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item + 1]["VALUE"] = db_values_tone[menu_value]
+    show_menu(0)
 
 
 def on_cancel_timbre_edit():
@@ -820,41 +887,46 @@ def on_cancel_timbre_edit():
 
 
 def on_save_timbre_edit():
-    global YMF825pico
     global menu_main, menu_category, menu_item, menu_value
 
     # Change the current timbre settings
 #    print("CHANGE TIMBRE SETTINGS[{}]".format(menu_category))
     for portion in list(range(YMF825pico.TIMBRE_PORTIONS)):
-        i = portion * 4
-        tone = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["selected"]
+        i = portion * 5
+        databank = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["selected"]
+        YMF825pico.set_timbre_portion_databank(menu_category, portion, databank)
+
+        tone = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i+1]["selected"]
         YMF825pico.set_timbre_portion_tone(menu_category, portion, tone)
 
-        vfrom = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i+1]["selected"]
-        vto   = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i+2]["selected"]
+        vfrom = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i+2]["selected"]
+        vto   = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i+3]["selected"]
         YMF825pico.set_timbre_voice_range(menu_category, portion, vfrom, vto)
 
-        volume = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i+3]["selected"]
+        volume = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i+4]["selected"]
         YMF825pico.set_timbre_portion_volume(menu_category, portion, volume)
 
     # Save timbre data
     YMF825pico.save_timbre_data()
+    gc.collect()
     on_cancel_timbre_edit()
 
 
 #--- MAIN MENU: TONE NAME
 # Make edit tone name menu (TONE>tone list>tone name>selelct)
 def make_edit_tone_name_menu(menu, prev_menu):
-    global YMF825pico
-
     clear_menu_memory(prev_menu, True, True, True)
+
+    values = []
+    for ch in CHARS_LIST:
+        values.append({"name": ch, "on_select": on_change_char, "on_selected": None})
 
     tone_list = YMF825pico.get_synth_tone_names()
     SYNTH_MENU[MAIN_MENU_TONE_NAME]["CATEGORY"] = []
     for tone in tone_list:
-        values = []
-        for ch in CHARS_LIST:
-            values.append({"name": ch, "on_select": on_change_char, "on_selected": None})
+#        values = []
+#        for ch in CHARS_LIST:
+#            values.append({"name": ch, "on_select": on_change_char, "on_selected": None})
 
         # Current tone name as ITEM menu
         item = []
@@ -891,7 +963,6 @@ def on_cancel_tone_name():
 
 # Change a tone name and save all tone data
 def on_save_tone_name():
-    global YMF825pico
     global menu_main, menu_category, menu_item, menu_value
 
     # Change the current tone name
@@ -905,6 +976,7 @@ def on_save_tone_name():
 
     # Save tone data
     YMF825pico.save_tone_data()
+    gc.collect()
 
     # Initialize the TONE NAME menu
     make_edit_tone_name_menu(menu_main, menu_main)
@@ -914,8 +986,6 @@ def on_save_tone_name():
 #--- MAIN MENU: TONE EDIT
 # Make edit tone edit menu (TONE EDIT>tone list>parameter name>selelct)
 def make_edit_tone_edit_menu(menu, prev_menu):
-    global YMF825pico
-
     clear_menu_memory(prev_menu, True, True, True)
 
     tone_list = YMF825pico.get_synth_tone_names()
@@ -928,8 +998,6 @@ def make_edit_tone_edit_menu(menu, prev_menu):
 
 # Make tone editor menu
 def on_select_tone_edit_tone(menu, prev_menu):
-    global YMF825pico
-
     # Remake ITEM>VALUE menu
 #    print("MENU={} CLEAR PREV={}".format(menu, prev_menu))
     clear_menu_memory(prev_menu, False, True, True)
@@ -999,7 +1067,6 @@ def on_cancel_tone_edit():
 
 prev_parm_hash = {}
 def reflect_tone_edit(force_save = False):
-    global YMF825pico
     global menu_main, menu_category, menu_item, menu_value, prev_parm_hash
 
     # Make edited tone parameters' hash
@@ -1032,6 +1099,7 @@ def on_save_tone_edit():
     if reflect_tone_edit(True):
         YMF825pico.save_edited_data_to_tone(menu_category)
         YMF825pico.save_tone_data()
+        gc.collect()
 
     on_play_demo("demo1", False)
     on_cancel_tone_edit()
@@ -1062,8 +1130,6 @@ def on_copy_adssl():
 # Make edit tone copy menu (TONE COPY>tone list>tone list>selelct)
 databank_copy_to = 0
 def make_edit_tone_copy_menu(menu, prev_menu):
-    global YMF825pico
-
     clear_menu_memory(prev_menu, True, True, True)
 
     tone_list = YMF825pico.get_synth_tone_names()
@@ -1078,7 +1144,6 @@ def make_edit_tone_copy_menu(menu, prev_menu):
 def on_select_tone_copy_tone(menu, prev_menu):
     global databank_copy_to
     global menu_main, menu_category, menu_item, menu_value, prev_parm_hash
-    global YMF825pico
 
     clear_menu_memory(prev_menu, False, True, True)
 
@@ -1104,6 +1169,8 @@ def on_select_tone_copy_tone(menu, prev_menu):
     else:
         tone_list = json.load(file)
         file.close()
+        
+    file = None
 
 #    tone_list = YMF825pico.get_synth_tone_names()
     for tone in tone_list:
@@ -1126,7 +1193,6 @@ def on_change_databank_copy_to():
 
 # Copy a tone to another one in the selected databank
 def on_change_copy_parm():
-    global YMF825pico
     global databank_copy_to
     global menu_main, menu_category, menu_item, menu_value, prev_parm_hash
 
@@ -1174,12 +1240,16 @@ def on_change_copy_parm():
 def make_edit_equalizer_name_menu(menu, prev_menu):
     clear_menu_memory(prev_menu, True, True, True)
 
+    values = []
+    for ch in CHARS_LIST:
+        values.append({"name": ch, "on_select": on_change_char, "on_selected": None})
+
     eq_list = YMF825pico.get_synth_equalizer_names()
     SYNTH_MENU[MAIN_MENU_EQUALIZER_NAME]["CATEGORY"] = []
     for equalizer in eq_list:
-        values = []
-        for ch in CHARS_LIST:
-            values.append({"name": ch, "on_select": on_change_char, "on_selected": None})
+#        values = []
+#        for ch in CHARS_LIST:
+#            values.append({"name": ch, "on_select": on_change_char, "on_selected": None})
 
         # Current tone name as ITEM menu
         item = []
@@ -1209,6 +1279,7 @@ def on_save_equalizer_name():
 
     # Save equalizer data
     YMF825pico.save_equalizer_data()
+    gc.collect()
 
     # Initialize the TONE NAME menu
     make_edit_equalizer_name_menu(menu_main, menu_main)
@@ -1339,6 +1410,7 @@ def save_equalizer_edit():
 def on_save_equalizer_edit():
     save_equalizer_edit()
     YMF825pico.save_equalizer_data()
+    gc.collect()
     YMF825pico.set_synth_equalizer(menu_category)
 
 
@@ -1467,6 +1539,7 @@ def get_rotary_encoders():
     global menu_main, menu_category, menu_item, menu_value
     global gui_item_menu, gui_item_menu_exit
     global item_menu_display_start
+    global db_values_tone
 
     # Rotary encoder pins
     for rte in ROTARY_ENCODERS:
@@ -1482,6 +1555,10 @@ def get_rotary_encoders():
                     menu_main = len(SYNTH_MENU) - 1
                 elif menu_main >= len(SYNTH_MENU):
                     menu_main = 0
+
+                if db_values_tone is not None:
+                    del db_values_tone
+                    db_values_tone = None
 
                 # on select event
                 if SYNTH_MENU[menu_main]["on_select"] is not None:
@@ -1706,9 +1783,10 @@ def piano_role_player(score_file="score1.txt", file_encode="utf-8"):
             if splt is None:
                 return
             (car, line) = splt
-            if not car in YMF825pico.note_name:
+            s = YMF825pico.get_scale_number(car)
+            if s < 0 or s > 127:
                 return
-            timbre[port]["base"] = YMF825pico.note_name.index(car)
+            timbre[port]["base"] = s
             pos = pos + len(car) + 1
             timbre[port]["from"] = pos
 
@@ -1926,6 +2004,5 @@ if __name__=='__main__':
 
 
     print("QUIT.")
-
 
 

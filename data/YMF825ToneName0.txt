@@ -1,1 +1,1 @@
-["EDITING", "PRESET TONE1", "PRESET TONE2", "PR1-BOct1", "Wave26", "TIMBRE 5", "Electronic Piano", "Rose Piano", "Toy Piano", "Piano", "Tuba", "Cello", "E-Piano", "Bell", "E-Piano2", "Glockenspiel", "Synth Glocken", "COPY1     ", "NoName18", "NoName19"]
+["EDITING", "PRESET1   ", "PRESET2   ", "BOM BON   ", "REED      ", "GUIT DIST ", "ELEPI1    ", "Rose Piano", "Toy Piano", "Piano", "Tuba", "Cello", "E-Piano", "BELL      ", "E-Piano2", "GLOCKEN SP", "SYN GLOCKN", "FANFARE   ", "GRND PIANO", "SYNTH BRAS"]

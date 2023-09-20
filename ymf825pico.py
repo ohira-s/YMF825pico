@@ -45,6 +45,8 @@
 #   00.100 2023/08/05: For PICO W
 #   01.000 2023/08/31: MIDI Keyboard available.
 #   01.001 2023/09/04: Databank available
+#   01.002 2023/09/19: Reduce global variable memory
+#   01.300 2023/09/19: Tones in the timbre can be selected from the other databank
 ##################################################################################
 
 from machine import Pin, SPI
@@ -84,34 +86,7 @@ class ymf825pico_class:
         self.sound_param = bytearray(36)
 
         # Note number and Note name
-        self.note_name = [
-            "C_","C_#","D_","D_#","E_","F_","F_#","G_","G_#","A_","A_#","B_",
-            "C0","C0#","D0","D0#","E0","F0","F0#","G0","G0#","A0","A0#","B0",
-            "C1","C1#","D1","D1#","E1","F1","F1#","G1","G1#","A1","A1#","B1",
-            "C2","C2#","D2","D2#","E2","F2","F2#","G2","G2#","A2","A2#","B2",
-            "C3","C3#","D3","D3#","E3","F3","F3#","G3","G3#","A3","A3#","B3",
-            "C4","C4#","D4","D4#","E4","F4","F4#","G4","G4#","A4","A4#","B4",
-            "C5","C5#","D5","D5#","E5","F5","F5#","G5","G5#","A5","A5#","B5",
-            "C6","C6#","D6","D6#","E6","F6","F6#","G6","G6#","A6","A6#","B6",
-            "C7","C7#","D7","D7#","E7","F7","F7#","G7","G7#","A7","A7#","B7",
-            "C8","C8#","D8","D8#","E8","F8","F8#","G8","G8#","A8","A8#","B8",
-            "C9","C9#","D9","D9#","E9","F9","F9#","G9","G9#","A9","A9#","B9"
-        ]
-
-        # Note name and Note number
-        self.note_dict = {
-            "C_":  0,"C_#":  1,"D_":  2,"D_#":  3,"E_":  4,"F_":  5,"F_#":  6,"G_":  7,"G_#":  8,"A_":  9,"A_#": 10,"B_": 11,
-            "C0": 12,"C0#": 13,"D0": 14,"D0#": 15,"E0": 16,"F0": 17,"F0#": 18,"G0": 19,"G0#": 20,"A0": 21,"A0#": 22,"B0": 23,
-            "C1": 24,"C1#": 25,"D1": 26,"D1#": 27,"E1": 28,"F1": 29,"F1#": 30,"G1": 31,"G1#": 32,"A1": 33,"A1#": 34,"B1": 35,
-            "C2": 36,"C2#": 37,"D2": 38,"D2#": 39,"E2": 40,"F2": 41,"F2#": 42,"G2": 43,"G2#": 44,"A2": 45,"A2#": 46,"B2": 47,
-            "C3": 48,"C3#": 49,"D3": 50,"D3#": 51,"E3": 52,"F3": 53,"F3#": 54,"G3": 55,"G3#": 56,"A3": 57,"A3#": 58,"B3": 59,
-            "C4": 60,"C4#": 61,"D4": 62,"D4#": 63,"E4": 64,"F4": 65,"F4#": 66,"G4": 67,"G4#": 68,"A4": 69,"A4#": 70,"B4": 71,
-            "C5": 72,"C5#": 73,"D5": 74,"D5#": 75,"E5": 76,"F5": 77,"F5#": 78,"G5": 79,"G5#": 80,"A5": 81,"A5#": 82,"B5": 83,
-            "C6": 84,"C6#": 85,"D6": 86,"D6#": 87,"E6": 88,"F6": 89,"F6#": 90,"G6": 91,"G6#": 92,"A6": 93,"A6#": 94,"B6": 95,
-            "C7": 96,"C7#": 97,"D7": 98,"D7#": 99,"E7":100,"F7":101,"F7#":102,"G7":103,"G7#":104,"A7":105,"A7#":106,"B7":107,
-            "C8":108,"C8#":109,"D8":110,"D8#":111,"E8":112,"F8":113,"F8#":114,"G8":115,"G8#":116,"A8":117,"A8#":118,"B8":119,
-            "C9":128,"C9#":121,"D9":122,"D9#":123,"E9":124,"F9":125,"F9#":126,"G9":127,"G9#":128,"A9":129,"A9#":130,"B9":131
-        }
+        self.note_str = ["C_","C_#","D_","D_#","E_","F_","F_#","G_","G_#","A_","A_#","B_"]
         
         #Tone data HI.
         self.notenum_hi = (0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x18,0x18,0x18,0x18,0x18,0x20,0x20,0x20,0x20,0x28,0x11,0x11,0x19,0x19,0x19,0x19,0x19,0x21,0x21,0x21,0x21,0x29,0x12,0x12,0x1A,0x1A,0x1A,0x1A,0x1A,0x22,0x22,0x22,0x22,0x2A,0x13,0x13,0x1B,0x1B,0x1B,0x1B,0x1B,0x23,0x23,0x23,0x23,0x2B,0x14,0x14,0x1C,0x1C,0x1C,0x1C,0x1C,0x24,0x24,0x24,0x24,0x2C,0x15,0x15,0x1D,0x1D,0x1D,0x1D,0x1D,0x25,0x25,0x25,0x25,0x2D,0x16,0x16,0x1E,0x1E,0x1E,0x1E,0x1E,0x26,0x26,0x26,0x26,0x2E,0x17,0x17,0x1F,0x1F,0x1F,0x1F,0x1F,0x27,0x27,0x27,0x27,0x2F,0x10,0x10,0x18,0x18,0x18,0x18,0x18,0x20,0x20,0x20,0x20,0x28,0x11,0x11,0x19,0x19,0x19,0x19,0x10,0x1E)
@@ -290,10 +265,10 @@ class ymf825pico_class:
         self.synth_play_timbre = 0                          # Playing timbre index
         self.synth_timbre_names = ["NoName"] * self.TIMBRES # Timbre names list
         self.synth_timbres = [[                             # YMF825 voice number (from-to) and its tone index for each timbre [Timber List][Timber Postion][from to]
-                                {"voice_from":  0, "voice_to": 15, "tone": 0, "volume": 31},
-                                {"voice_from": -1, "voice_to": -1, "tone": 0, "volume":  0},
-                                {"voice_from": -1, "voice_to": -1, "tone": 0, "volume":  0},
-                                {"voice_from": -1, "voice_to": -1, "tone": 0, "volume":  0}
+                                {"voice_from":  0, "voice_to": 15, "databank": 0, "tone": 0, "volume": 31},
+                                {"voice_from": -1, "voice_to": -1, "databank": 0, "tone": 0, "volume":  0},
+                                {"voice_from": -1, "voice_to": -1, "databank": 0, "tone": 0, "volume":  0},
+                                {"voice_from": -1, "voice_to": -1, "databank": 0, "tone": 0, "volume":  0}
                              ]] * self.TIMBRES
 
         # Equalizer settings
@@ -385,8 +360,8 @@ class ymf825pico_class:
     # Note off.
     #   Turn off the note playing.
     def note_off( self, voice, volume = 0x54 ):
-        if self.synth_voices[voice] in self.note_dict:
-            s = self.get_scale_number( self.synth_voices[voice] )
+        s = self.get_scale_number(self.synth_voices[voice])
+        if 0 <= s and s <= 127:
 #            print("STOP VOICE, SCALE:", voice,s)
             self.spi_write_byte( 0x0B, voice & 0x0f )
             self.spi_write_byte( 0x0C, volume & 0x7c )
@@ -411,7 +386,21 @@ class ymf825pico_class:
     #
     #   RETURN:: scale number(index) in fnum_hi nd lo.
     def get_scale_number( self, scale ):
-        return self.note_dict[scale]
+        octave = scale[1:2]
+#        print("SCALE, OCTAVE=", scale, octave)
+        if octave == "":
+            return -1
+
+        octv = 0 if not octave.isdigit() else (int(octave) + 1)
+        sc = scale[0:1] + "_" + scale[2:]
+#        print("SCALE BASE, OCTV, INDEX=", sc, octv, self.note_str.index(sc))
+        if sc in self.note_str:
+            try:
+                return self.note_str.index(sc) + octv * 12
+            except:
+                return -1
+        else:
+            return -1
 
 
     # Play by a scale name, play time and rest time.
@@ -421,7 +410,7 @@ class ymf825pico_class:
     #   rest:: note off time(msec) after playing the note.
     def play_by_scale( self, scale, play, rest ):
         s = self.get_scale_number(scale)
-        if s <= 127:
+        if 0 <= s and s <= 127:
             print("PLAY:", scale, "=", s, " ", play, "_", rest, "//")
             self.synth_voices[0] = scale
             self.note_on( 0, self.notenum_hi[s], self.notenum_lo[s] )
@@ -460,7 +449,9 @@ class ymf825pico_class:
     #
     # String of the note
     def get_note_scale(self, scale):
-        return self.note_name[scale]
+        octave = int(scale / 12) - 1
+        note = scale % 12
+        return self.note_str[note] if octave < 0 else self.note_str[note].replace("_", str(octave))
 
 
     # Play by a scale name, call stop_by_timbre_scale() to turn off the scale.
@@ -473,7 +464,7 @@ class ymf825pico_class:
         if v >= 0 and self.synth_voices[v] != scale:
             s = self.get_scale_number(scale)
     
-            if s <= 127:
+            if 0 <= s and s <= 127:
                 volume = self.synth_timbres[self.synth_play_timbre][timbre_portion]["volume"]
                 print("PLAY:", self.synth_play_timbre, self.synth_timbre_names[self.synth_play_timbre], timbre_portion, self.synth_tone_names[self.synth_timbres[self.synth_play_timbre][timbre_portion]["tone"]], ":", scale, "=", s, v, "vol =", volume)
                 self.note_on( v, self.notenum_hi[s], self.notenum_lo[s], volume << 2 )
@@ -500,10 +491,11 @@ class ymf825pico_class:
     #   RETURN:: voice number
     def play_by_timbre_scale_velocity( self, timbre_portion, scale, velocity ):
         v = self.get_voice_in_timbre( timbre_portion, scale, True )
+#        print("PLAY: portion, scale, v=", timbre_portion, scale, v)
         if v >= 0 and self.synth_voices[v] != scale:
             s = self.get_scale_number(scale)
     
-            if s <= 127:
+            if 0 <= s and s <= 127:
                 # Inerite sustain pedal if the timbre portion is changed
                 if self.sustain_pressed != -1:
                     self.sustain_pressed = timbre_portion
@@ -511,7 +503,8 @@ class ymf825pico_class:
                 # Note on
                 volume = self.synth_timbres[self.synth_play_timbre][timbre_portion]["volume"]
                 volume = math.floor(volume * velocity / 127)
-                print("PLAY:", self.synth_play_timbre, self.synth_timbre_names[self.synth_play_timbre], timbre_portion, self.synth_tone_names[self.synth_timbres[self.synth_play_timbre][timbre_portion]["tone"]], ":", scale, "=", s, v, "vol =", volume)
+#                print("PLAY:", self.synth_play_timbre, self.synth_timbre_names[self.synth_play_timbre], timbre_portion, self.synth_tone_names[self.synth_timbres[self.synth_play_timbre][timbre_portion]["tone"]], ":", scale, "=", s, v, "vol =", volume)
+                print("PLAY: T,TN, P, B, T=", self.synth_play_timbre, self.synth_timbre_names[self.synth_play_timbre], timbre_portion, self.synth_timbres[self.synth_play_timbre][timbre_portion]["databank"], self.synth_timbres[self.synth_play_timbre][timbre_portion]["tone"], ":", scale, "=", s, v, "vol =", volume)
                 self.note_on( v, self.notenum_hi[s], self.notenum_lo[s], volume << 2 )
                 self.synth_voices[v] = scale
                 self.synth_volumes[v] = volume
@@ -534,7 +527,7 @@ class ymf825pico_class:
     #
     #  RETURN:: voice number
     def play_by_timbre_note(self, timbre_portion, scale, velocity):
-        return self.play_by_timbre_scale_velocity(timbre_portion, self.note_name[scale], velocity)
+        return self.play_by_timbre_scale_velocity(timbre_portion, self.get_note_scale(scale), velocity)
     
 
     # Stop a scale in the timbre.
@@ -567,7 +560,7 @@ class ymf825pico_class:
     #  timbre_portion: Multi-Timbre portion index (0..TIMBRE_PORTIONS)
     #  scale:: 60 = "C4", "From "C0" to "G9".
     def stop_by_timbre_note(self, timbre_portion, scale):
-        self.stop_by_timbre_scale(timbre_portion, self.note_name[scale])
+        self.stop_by_timbre_scale(timbre_portion, self.get_note_scale(scale))
 
 
     #Set sutain pedal status
@@ -680,6 +673,11 @@ class ymf825pico_class:
         return self.synth_timbres[self.synth_play_timbre][portion]["voice_to"]
 
 
+    # Get databank of the timbre voice tone
+    def get_timbre_databank( self, timbre, portion ):
+        return self.synth_timbres[timbre][portion]["databank"]
+
+
     # Get timbre voice tone
     def get_timbre_tone( self, timbre, portion ):
         return self.synth_timbres[timbre][portion]["tone"]
@@ -698,6 +696,11 @@ class ymf825pico_class:
     # Get
     def get_playing_timbre_tone( self, portion ):
         return self.synth_timbres[self.synth_play_timbre][portion]["tone"]
+
+
+    # Set databank of the timbre portion tone
+    def set_timbre_portion_databank( self, timbre, portion, bank ):
+        self.synth_timbres[timbre][portion]["databank"] = bank
 
 
     # Set timbre portion tone
@@ -864,12 +867,37 @@ class ymf825pico_class:
     #   timbre:: Timbre index (0..TIMBRES-1)
     #   timbre_portion:: timbre index (0..TIMBRE_PORTIONS)
     def set_timbre_tone( self, timbre, timbre_portion ):
-        vs = self.synth_timbres[self.synth_play_timbre][timbre_portion]["voice_from"];
-        vt = self.synth_timbres[self.synth_play_timbre][timbre_portion]["voice_to"];
+        def load_tone_in(databank):
+            try:
+                file = open( self.tone_param_file.replace(".txt", str(databank) + ".txt"), encoding = self.file_encode )
+            except OSError as e:
+                print(e)
+            else:
+                tones_parm = json.load( file )
+                file.close()
+
+            file = None
+            return tones_parm
+
+        vs = self.synth_timbres[timbre][timbre_portion]["voice_from"];
+        vt = self.synth_timbres[timbre][timbre_portion]["voice_to"];
+        db = self.synth_timbres[timbre][timbre_portion]["databank"];
+        del_flg = False
+        if db != self.DATABANK:
+            print("LOAD TONES in db, DATABANK=", db, self.DATABANK)
+            tones_parm = load_tone_in(db)
+            del_flg = True
+        else:
+            tones_parm = self.synth_tones
+
         if vs >=0 and vs <= vt:
-            print("SET TIMBER PORTION TONE", timbre, timbre_portion, self.synth_timbres[self.synth_play_timbre][timbre_portion]["tone"], ":", vs, vt )
+#            print("SET TIMBER PORTION TONE", timbre, timbre_portion, self.synth_timbres[self.synth_play_timbre][timbre_portion]["tone"], ":", vs, vt )
+            print("SET TIMBER PORTION TONE: T, P, B, T=", timbre, timbre_portion, db, self.synth_timbres[timbre][timbre_portion]["tone"], ":", vs, vt )
             for v in range(vs,vt+1):
-                self.synth_sounds[v] = self.synth_tones[self.synth_timbres[self.synth_play_timbre][timbre_portion]["tone"]].copy()
+                self.synth_sounds[v] = tones_parm[self.synth_timbres[timbre][timbre_portion]["tone"]].copy()
+
+        if del_flg:
+            del tones_parm
 
 
     # Set timber sound and send it to YMF825.
@@ -1100,6 +1128,8 @@ class ymf825pico_class:
             self.synth_tone_names = json.load( file )
             file.close()
 
+        file = None
+
         try:
             file = open( self.tone_param_file.replace(".txt", str(self.DATABANK) + ".txt"), encoding = self.file_encode )
         except OSError as e:
@@ -1107,6 +1137,8 @@ class ymf825pico_class:
         else:
             self.synth_tones = json.load( file )
             file.close()
+
+        file = None
 
 
     # Load timbre data.
@@ -1119,6 +1151,8 @@ class ymf825pico_class:
             self.synth_timbre_names = json.load( file )
             file.close()
 
+        file = None
+
         try:
             file = open( self.timbre_param_file.replace(".txt", str(self.DATABANK) + ".txt"), encoding = self.file_encode )
         except OSError as e:
@@ -1126,6 +1160,8 @@ class ymf825pico_class:
         else:
             self.synth_timbres = json.load( file )
             file.close()
+
+        file = None
 
 
     # Load equalizer data.
@@ -1138,6 +1174,8 @@ class ymf825pico_class:
             self.synth_equalizer_names = json.load( file )
             file.close()
 
+        file = None
+
         try:
             file = open( self.equalizer_param_file.replace(".txt", str(self.DATABANK) + ".txt") , encoding = self.file_encode )
         except OSError as e:
@@ -1145,6 +1183,8 @@ class ymf825pico_class:
         else:
             self.synth_equalizer_settings = json.load( file )
             file.close()
+
+        file = None
 
 
     # Save tone data.
@@ -1154,18 +1194,20 @@ class ymf825pico_class:
         except OSError as e:
             print(e)
         else:
-#            json.dump( self.synth_tone_names, file, indent = 4 )
             json.dump( self.synth_tone_names, file )
             file.close()
+
+        file = None
 
         try:
             file = open( tone_file.replace(".txt", str(self.DATABANK) + ".txt"), "w", encoding = encode )
         except OSError as e:
             print(e)
         else:
-#            json.dump( self.synth_tones, file, indent = 4 )
             json.dump( self.synth_tones, file )
             file.close()
+
+        file = None
 
 
     # Save timbre data.
@@ -1175,18 +1217,20 @@ class ymf825pico_class:
         except OSError as e:
             print(e)
         else:
-#            json.dump( self.synth_timbre_names, file, indent = 4 )
             json.dump( self.synth_timbre_names, file )
             file.close()
+
+        file = None
 
         try:
             file = open( timbre_file.replace(".txt", str(self.DATABANK) + ".txt"), "w", encoding = encode )
         except OSError as e:
             print(e)
         else:
-#            json.dump( self.synth_timbres, file, indent = 4 )
             json.dump( self.synth_timbres, file )
             file.close()
+
+        file = None
 
 
     # Save equalizer data.
@@ -1196,18 +1240,20 @@ class ymf825pico_class:
         except OSError as e:
             print(e)
         else:
-#            json.dump( self.synth_equalizer_names, file, indent = 4 )
             json.dump( self.synth_equalizer_names, file )
             file.close()
+
+        file = None
 
         try:
             file = open( equalizer_file.replace(".txt", str(self.DATABANK) + ".txt"), "w", encoding = encode )
         except OSError as e:
             print(e)
         else:
-#            json.dump( self.synth_equalizer_settings, file, indent = 4 )
             json.dump( self.synth_equalizer_settings, file )
             file.close()
+
+        file = None
 
 
     # Reset and Initialize YMF825.

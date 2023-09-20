@@ -89,12 +89,12 @@ YMF825pico has 4 layers menu structures as below.
 |                | EQIALIZER        | *equalizer list* | NO/PLAY      |
 |                | DEMO             | DEMO1..3         | NO/PLAY      |
 |                | DATABANK         | 0..9             | NO/PLAY      |
-| TIMBRE NAME    | *timbre list*    | A..Z0..9         | =A..Z0..9    |
+| TIMBRE NAME    | *timbre list*    | A..z0..9         | =A..z0..9    |
 | TIMBRE EDIT    | *timbre list*    | *parameters*     | *values*     |
-| TONE NAME      | *tone list*      | A..Z0..9         | =A..Z0..9    |
+| TONE NAME      | *tone list*      | A..z0..9         | =A..z0..9    |
 | TONE EDIT      | *tone list*      | *parameters*     | *values*     |
 | TONE COPY      | *tone list*      | *tone list*      | NO/SURE?/YES |
-| EQUALIZER NAME | *equalizer list* | A..Z0..9         | =A..Z0..9    |
+| EQUALIZER NAME | *equalizer list* | A..z0..9         | =A..z0..9    |
 | EQUALIZER EDIT | *equalizer list* | *parameters*     | *values*     |
 
 *italic*: variable list
@@ -213,7 +213,7 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         | Items           | Values     | Descriptions |
         | --------------- | ---------- | ------------ |
         | ***character*** | =          | Not change. |
-        |                 | A..Z0..9   | Change the character to this. |
+        |                 | A..z0..9   | Change the character to this. |
         | SAVE            | NO         | Nothing happens. |
         |                 | SURE?      | Nothing happens. |
         |                 | YES        | Save as new name. |
@@ -232,19 +232,23 @@ An OLED display shows you the menus and the values.  THe layout is as below.
     - #### **Items and Values**
         | Items           | Values          | Descriptions |
         | --------------- | --------------- | ------------ |
-        | TONE0           | ***tone list*** | Select a tone for MIDI channel 0. |
+        | DATABANK0       | 0..9            | Select a databank number of the tone0. |
+        | TONE0           | ***tone list*** | Select a tone for MIDI channel 1. |
         | VOICE L0        | 0..15           | Lower scale to play with this tone. |
         | VOICE H0        | 0..15           | Upper scale to play with this tone. |
         | VOLUME0         | 0..31           | Tone volume. |
-        | TONE1           | ***tone list*** | Select a tone for MIDI channel 1. |
+        | DATABANK1       | 0..9            | Select a databank number of the tone1. |
+        | TONE1           | ***tone list*** | Select a tone for MIDI channel 2. |
         | VOICE L1        | 0..15           | Lower voice number to assign this tone. |
         | VOICE H1        | 0..15           | Upper voice number to assign this tone. |
         | VOLUME1         | 0..31           | Tone volume. |
-        | TONE2           | ***tone list*** | Select a tone for MIDI channel 2. |
+        | DATABANK2       | 0..9            | Select a databank number of the tone2. |
+        | TONE2           | ***tone list*** | Select a tone for MIDI channel 3. |
         | VOICE L2        | 0..15           | Lower scale to play with this tone. |
         | VOICE H2        | 0..15           | Upper scale to play with this tone. |
         | VOLUME2         | 0..31           | Tone volume. |
-        | TONE3           | ***tone list*** | Select a tone for MIDI channel 3. |
+        | DATABANK3       | 0..9            | Select a databank number of the tone3. |
+        | TONE3           | ***tone list*** | Select a tone for MIDI channel 4. |
         | VOICE L3        | 0..15           | Lower scale to play with this tone. |
         | VOICE H3        | 0..15           | Upper scale to play with this tone. |
         | VOLUME3         | 0..31           | Tone volume. |
@@ -271,7 +275,7 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         | Items           | Values     | Descriptions |
         | --------------- | ---------- | ------------ |
         | ***character*** | =          | Not change. |
-        |                 | A..Z0..9   | Change the character to this. |
+        |                 | A..z0..9   | Change the character to this. |
         | SAVE            | NO         | Nothing happens. |
         |                 | SURE?      | Nothing happens. |
         |                 | YES        | Save as new name. |
@@ -296,9 +300,9 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         | LFO             | 0..7       | LFO frequency. |
         | Wave Shp A      | 0..31      | Operator-A wave shape. |
         | Total LV A      | 0..31      | Operator-A output level. |
+        | MCM Freq A      | 0..15      | Operator-A multi control magnification frequency. |
         | Feedback A      | 0..7       | Operator-A feedback level. |
         | Detune   A      | 0..7       | Operator-A detune. |
-        | MCM Freq A      | 0..15      | Operator-A multi control magnification frequency. |
         | Atack RT A      | 0..15      | Operator-A attack rate. |
         | Decay RT A      | 0..15      | Operator-A decay rate. |
         | Sustn LV A      | 0..15      | Operator-A sustain level. |
@@ -313,9 +317,9 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         | IgnKy OF A      | OFF / ON   | Operator-A ignore key off. |
         | Wave Shp B      | 0..31      | Operator-B wave shape. |
         | Total LV B      | 0..31      | Operator-B output level. |
+        | MCM Freq B      | 0..15      | Operator-B multi control magnification frequency. |
         | Feedback B      | 0..7       | Operator-B feedback level. |
         | Detune   B      | 0..7       | Operator-B detune. |
-        | MCM Freq B      | 0..15      | Operator-B multi control magnification frequency. |
         | Atack RT B      | 0..15      | Operator-B attack rate. |
         | Decay RT B      | 0..15      | Operator-B decay rate. |
         | Sustn LV B      | 0..15      | Operator-B sustain level. |
@@ -330,9 +334,9 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         | IgnKy OF B      | OFF / ON   | Operator-B ignore key off. |
         | Wave Shp C      | 0..31      | Operator-C wave shape. |
         | Total LV C      | 0..31      | Operator-C output level. |
+        | MCM Freq C      | 0..15      | Operator-C multi control magnification frequency. |
         | Feedback C      | 0..7       | Operator-C feedback level. |
         | Detune   C      | 0..7       | Operator-C detune. |
-        | MCM Freq C      | 0..15      | Operator-C multi control magnification frequency. |
         | Atack RT C      | 0..15      | Operator-C attack rate. |
         | Decay RT C      | 0..15      | Operator-C decay rate. |
         | Sustn LV C      | 0..15      | Operator-C sustain level. |
@@ -347,9 +351,9 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         | IgnKy OF C      | OFF / ON   | Operator-C ignore key off. |
         | Wave Shp D      | 0..31      | Operator-D wave shape. |
         | Total LV D      | 0..31      | Operator-D output level. |
+        | MCM Freq D      | 0..15      | Operator-D multi control magnification frequency. |
         | Feedback D      | 0..7       | Operator-D feedback level. |
         | Detune   D      | 0..7       | Operator-D detune. |
-        | MCM Freq D      | 0..15      | Operator-D multi control magnification frequency. |
         | Atack RT D      | 0..15      | Operator-D attack rate. |
         | Decay RT D      | 0..15      | Operator-D decay rate. |
         | Sustn LV D      | 0..15      | Operator-D sustain level. |
@@ -446,7 +450,7 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         | Items           | Values     | Descriptions |
         | --------------- | ---------- | ------------ |
         | ***character*** | =          | Not change. |
-        |                 | A..Z0..9   | Change the character to this. |
+        |                 | A..z0..9   | Change the character to this. |
         | SAVE            | NO         | Nothing happens. |
         |                 | SURE?      | Nothing happens. |
         |                 | YES        | Save as new name. |
