@@ -127,18 +127,22 @@ An OLED display shows you the menus and the values.  THe layout is as below.
     | TIMBRE EDIT |        |
     | ----------- | ------ |
     | ROCK BAND   |        |
+    | DATABANK0   | 0      |
     | TONE0       | GUITAR |
     | VOICE L0    | 0      |
     | VOICE H0    | 5      |
     | VOLUME0     | 31     |
+    | DATABANK1   | 0      |
     | TONE1       | BASS   |
     | VOICE L1    | 6      |
     | VOICE H1    | 8      |
     | VOLUME1     | 31     |
+    | DATABANK2   | 3      |
     | TONE2       | DRUM   |
     | VOICE L2    | 9      |
     | VOICE H2    | 11     |
     | VOLUME2     | 20     |
+    | DATABANK3   | 1      |
     | TONE3       | SYNTH  |
     | VOICE L3    | 12     |
     | VOICE H3    | 15     |
