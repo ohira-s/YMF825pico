@@ -378,7 +378,7 @@ GUI_EDITOR = [
      "disp": None
     },
     # Wave Shape, Total Volume, Multi Control Magnification Frequency
-    {"items": [3, 4, 5, 20, 21, 23, 37, 38, 39, 54, 55, 56],
+    {"items": [3, 4, 5, 20, 21, 22, 37, 38, 39, 54, 55, 56],
      "func": gui_tone_edit_volumes,
      "disp": [
          ("A:", 0, DISPLAY_LINE_HEIGHT*2), ("V:", 0, DISPLAY_LINE_HEIGHT*3), ("M:", DISPLAT_QUOT_WIDTH, DISPLAY_LINE_HEIGHT*3),
