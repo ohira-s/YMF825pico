@@ -363,14 +363,15 @@ class ymf825pico_class:
     def note_off( self, voice, volume = 0x54 ):
         s = self.get_scale_number(self.synth_voices[voice])
         if 0 <= s and s <= 127:
-#            print("STOP VOICE, SCALE:", voice,s)
+#            "STOP VOICE, SCALE:", voice,s)
             self.spi_write_byte( 0x0B, voice & 0x0f )
             self.spi_write_byte( 0x0C, volume & 0x7c )
             self.spi_write_byte( 0x0D, self.notenum_hi[s] )
             self.spi_write_byte( 0x0E, self.notenum_lo[s] )
             self.spi_write_byte( 0x0F, 0x00 | (voice&0x0f) )
         else:
-            print("UNKNOWN STOP VOICE:[", voice, "]")
+            pass
+#            print("UNKNOWN STOP VOICE:[", voice, "]")
             
         # LED
         self.led_turn(False)
@@ -412,14 +413,15 @@ class ymf825pico_class:
     def play_by_scale( self, scale, play, rest ):
         s = self.get_scale_number(scale)
         if 0 <= s and s <= 127:
-            print("PLAY:", scale, "=", s, " ", play, "_", rest, "//")
+#            print("PLAY:", scale, "=", s, " ", play, "_", rest, "//")
             self.synth_voices[0] = scale
             self.note_on( 0, self.notenum_hi[s], self.notenum_lo[s] )
             self.delay( play )
             self.note_off( 0 )
             self.delay( rest )
         else:
-            print("Unknown scale:", scale)
+            pass
+#            print("Unknown scale:", scale)
 
 
     # Get voice number playing new note in timbre.
@@ -478,9 +480,11 @@ class ymf825pico_class:
 
 #            print("VOICES=",synth_voices)
             else:
-                print("Unknown play scale:", scale)
+                pass
+#                print("Unknown play scale:", scale)
         else:
-            print("No start voice:", self.synth_play_timbre, timbre_portion, scale)
+            pass
+#            print("No start voice:", self.synth_play_timbre, timbre_portion, scale)
 
         return v
 
@@ -505,7 +509,7 @@ class ymf825pico_class:
                 volume = self.synth_timbres[self.synth_play_timbre][timbre_portion]["volume"]
                 volume = math.floor(volume * velocity / 127)
 #                print("PLAY:", self.synth_play_timbre, self.synth_timbre_names[self.synth_play_timbre], timbre_portion, self.synth_tone_names[self.synth_timbres[self.synth_play_timbre][timbre_portion]["tone"]], ":", scale, "=", s, v, "vol =", volume)
-                print("PLAY: T,TN, P, B, T=", self.synth_play_timbre, self.synth_timbre_names[self.synth_play_timbre], timbre_portion, self.synth_timbres[self.synth_play_timbre][timbre_portion]["databank"], self.synth_timbres[self.synth_play_timbre][timbre_portion]["tone"], ":", scale, "=", s, v, "vol =", volume)
+#                print("PLAY: T,TN, P, B, T=", self.synth_play_timbre, self.synth_timbre_names[self.synth_play_timbre], timbre_portion, self.synth_timbres[self.synth_play_timbre][timbre_portion]["databank"], self.synth_timbres[self.synth_play_timbre][timbre_portion]["tone"], ":", scale, "=", s, v, "vol =", volume)
                 self.note_on( v, self.notenum_hi[s], self.notenum_lo[s], volume << 2 )
                 self.synth_voices[v] = scale
                 self.synth_volumes[v] = volume
@@ -516,9 +520,11 @@ class ymf825pico_class:
 
 #            print("VOICES=",synth_voices)
             else:
-                print("Unknown play scale:", scale)
+                pass
+#                print("Unknown play scale:", scale)
         else:
-            print("No start voice:", self.synth_play_timbre, timbre_portion, scale)
+            pass
+#            print("No start voice:", self.synth_play_timbre, timbre_portion, scale)
 
         return v
 
@@ -543,18 +549,19 @@ class ymf825pico_class:
             
             # Sustail pedal
             if self.synth_sustain[v] == self.WILL_BE_SUSTAIN:
-                print("SUSTAIN:", timbre_portion, scale, "=", v, "vol =", volume)
+#                print("SUSTAIN:", timbre_portion, scale, "=", v, "vol =", volume)
                 self.synth_sustain[v] = self.IN_SUSTAIN
 
             # Sustail pedal is released
             else:
-                print("STOP:", timbre_portion, scale, "=", v, "vol =", volume)
+#                print("STOP:", timbre_portion, scale, "=", v, "vol =", volume)
                 self.note_off( v, volume << 2 )
                 self.synth_voices[v] = ""
                 
 #        print("VOICES=", synth_voices)
         else:
-            print("Unknown stop voice:", self.synth_play_timbre, timbre_portion, scale)
+            pass
+#            print("Unknown stop voice:", self.synth_play_timbre, timbre_portion, scale)
 
 
     #Stop a scale in the timbre.
@@ -575,7 +582,7 @@ class ymf825pico_class:
             for v in list(range(self.synth_timbres[self.synth_play_timbre][timbre_portion]["voice_from"], self.synth_timbres[self.synth_play_timbre][timbre_portion]["voice_to"]+1)):
                 if self.synth_voices[v] != "":
                     self.synth_sustain[v] = self.WILL_BE_SUSTAIN
-                    print("WILL_BE_SUSTAIN:", self.synth_voices[v])
+#                    print("WILL_BE_SUSTAIN:", self.synth_voices[v])
         
         # Sustain pedal was released --> note off the notes in sustain mode (all timbres)
         else:
@@ -584,7 +591,7 @@ class ymf825pico_class:
                     if self.synth_voices[v] != "":
                         if self.synth_sustain[v] == self.IN_SUSTAIN:
                             self.stop_by_timbre_scale(tp, self.synth_voices[v])
-                            print("STOP SUSTAIN:", self.synth_voices[v])
+#                            print("STOP SUSTAIN:", self.synth_voices[v])
                     
                         self.synth_sustain[v] = self.NO_SUSTAIN
         
@@ -598,13 +605,13 @@ class ymf825pico_class:
         all_sound_param += bytearray(self.synth_sounds[0][32:])         # trailer
 
         #Burst write mode
-        print("YMF825 Burst write mode: ", timbre)
+#        print("YMF825 Burst write mode: ", timbre)
         self.spi_write_byte( 0x08, 0xF6 )
         self.delay(20)
         self.spi_write_byte( 0x08, 0x00 )
 
         #Write tone data to YMF825 FIFO.
-        print("Write timbre tone data to YMF825:", timbre)
+#        print("Write timbre tone data to YMF825:", timbre)
 #    print("YMF825 PARAM:", all_sound_param)
         self.spi_write( 0x07, all_sound_param )
 
@@ -778,7 +785,7 @@ class ymf825pico_class:
 
             carry = False
             if sign:
-                print("SIGN BFR:", mantissa)
+#                print("SIGN BFR:", mantissa)
                 revs = ""
                 lman = len(mantissa)
                 for b in range(1,lman-1):
@@ -794,7 +801,7 @@ class ymf825pico_class:
                             carry = True
 
                 mantissa = "0." + revs
-                print("SIGN AFT:", mantissa, carry)
+#                print("SIGN AFT:", mantissa, carry)
 
             return mantissa,carry,rb
 
@@ -819,11 +826,11 @@ class ymf825pico_class:
                 if carry:
                     ceq_int += 1
 
-                print("EQUALIZER BITS and CARRY = INT:", mantissa, carry, "=", ceq_int)
+#                print("EQUALIZER BITS and CARRY = INT:", mantissa, carry, "=", ceq_int)
                 self.equalizer_ceq[ceq_num] = self.equalizer_ceq[ceq_num] | ( ceq_int << 4 )
-                print("FRC:: CEQ INT SHIFT ARRAY FRAC=", ceq, ceq_int, ( ceq_int << 4 ), self.equalizer_ceq[ceq_num], ceq_frc)
+#                print("FRC:: CEQ INT SHIFT ARRAY FRAC=", ceq, ceq_int, ( ceq_int << 4 ), self.equalizer_ceq[ceq_num], ceq_frc)
                 for b in range(2,len( mantissa )):
-                    print("BIT:", b, "=", mantissa[b])
+#                    print("BIT:", b, "=", mantissa[b])
                     if mantissa[b] == "1":
                         if   b <=  5:       #  2.. 5
                             self.equalizer_ceq[ceq_num  ] = self.equalizer_ceq[ceq_num  ] | ( 0x01 << ( 5-b) )
@@ -837,9 +844,9 @@ class ymf825pico_class:
                     ceq_int += 1
 
                 self.equalizer_ceq[ceq_num] = self.equalizer_ceq[ceq_num] | ( ceq_int << 4 )
-                print("INT:: CEQ INT SHIFT ARRAY FRAC=", ceq, ceq_int, ( ceq_int << 4 ), self.equalizer_ceq[ceq_num], ceq_frc)
+#                print("INT:: CEQ INT SHIFT ARRAY FRAC=", ceq, ceq_int, ( ceq_int << 4 ), self.equalizer_ceq[ceq_num], ceq_frc)
 
-            print("EQL::", self.equalizer_ceq[ceq_num], self.equalizer_ceq[ceq_num+1], self.equalizer_ceq[ceq_num+2])
+#            print("EQL::", self.equalizer_ceq[ceq_num], self.equalizer_ceq[ceq_num+1], self.equalizer_ceq[ceq_num+2])
 
         # Clear CEQ bytes data
         for b in range(15):
@@ -860,7 +867,7 @@ class ymf825pico_class:
 
         #Write tone data to YMF825 FIFO.
 #    print("EDITOR: Write sound data to YMF825.")
-        print("EQUALIZER", eql, ":", list(self.equalizer_ceq))
+#        print("EQUALIZER", eql, ":", list(self.equalizer_ceq))
         self.spi_write( 32 + eql, bytearray(list(self.equalizer_ceq)) )
 
 
@@ -900,7 +907,7 @@ class ymf825pico_class:
         db = self.synth_timbres[timbre][timbre_portion]["databank"];
         del_flg = False
         if db != self.DATABANK:
-            print("LOAD TONES in db, DATABANK=", db, self.DATABANK)
+#            print("LOAD TONES in db, DATABANK=", db, self.DATABANK)
             tones_parm = load_tone_in(db)
             del_flg = True
         else:
@@ -908,7 +915,7 @@ class ymf825pico_class:
 
         if vs >=0 and vs <= vt:
 #            print("SET TIMBER PORTION TONE", timbre, timbre_portion, self.synth_timbres[self.synth_play_timbre][timbre_portion]["tone"], ":", vs, vt )
-            print("SET TIMBER PORTION TONE: T, P, B, T=", timbre, timbre_portion, db, self.synth_timbres[timbre][timbre_portion]["tone"], ":", vs, vt )
+#            print("SET TIMBER PORTION TONE: T, P, B, T=", timbre, timbre_portion, db, self.synth_timbres[timbre][timbre_portion]["tone"], ":", vs, vt )
             for v in range(vs,vt+1):
                 self.synth_sounds[v] = tones_parm[self.synth_timbres[timbre][timbre_portion]["tone"]].copy()
 
@@ -939,7 +946,7 @@ class ymf825pico_class:
 
         name = re.sub( '^ {1,}', "", name )
         name = re.sub( ' {1,}$', "", name )
-        print("RENAME TONE", self.synth_tone_names[tone], "-->", name, ":", self.synth_tone_names.count( name ))
+#        print("RENAME TONE", self.synth_tone_names[tone], "-->", name, ":", self.synth_tone_names.count( name ))
 
         if   name == "":
             return ( "ERROR", "TONE", "Illegal tone name." )
@@ -966,7 +973,7 @@ class ymf825pico_class:
     def rename_timbre( self, timbre, name ):
         name = re.sub( '^ {1,}', "", name )
         name = re.sub( ' {1,}$', "", name )
-        print("RENAME TIMBER", self.synth_timbre_names[timbre], "-->", name, ":", self.synth_timbre_names.count( name ))
+#        print("RENAME TIMBER", self.synth_timbre_names[timbre], "-->", name, ":", self.synth_timbre_names.count( name ))
 
         if   timbre == 0:
             return ( "ERROR", "TIMBER", "Can't rename EDITING timbre." )
@@ -988,7 +995,7 @@ class ymf825pico_class:
     def rename_equalizer( self, eql, name ):
         name = re.sub( '^ {1,}', "", name )
         name = re.sub( ' {1,}$', "", name )
-        print("RENAME EQUALIZER", self.synth_equalizer_names[eql], "-->", name, ":", self.synth_equalizer_names.count( name ))
+#        print("RENAME EQUALIZER", self.synth_equalizer_names[eql], "-->", name, ":", self.synth_equalizer_names.count( name ))
 
         if   ( eql == 0 or eql == 1 ) and self.synth_equalizer_names[eql] != name:
             return ( "ERROR", "EQUALIZER", "Can't rename EDITING or ALL PATH equalizer." )
@@ -1275,14 +1282,14 @@ class ymf825pico_class:
     # Reset and Initialize YMF825.
     def init_YMF825( self ):
         self.YMF825_reset.high()
-        print("RESET HIGH")
+#        print("RESET HIGH")
         self.delay(1000)
         self.YMF825_reset.low()
-        print("RESET LOW")
+#        print("RESET LOW")
         self.delay(1000)
         self.YMF825_reset.high()
         self.delay(1000)
-        print("Reset YMF825.")
+#        print("Reset YMF825.")
       
         self.spi_write_byte( 0x1D, 0x00 )
         self.spi_write_byte( 0x02, 0x0E )
@@ -1321,11 +1328,11 @@ class ymf825pico_class:
 
     # Set up hardware.
     def setup_hardware( self ):
-        print("SPI uses CE0(pin24/port8)")
+#        print("SPI uses CE0(pin24/port8)")
         self.led_turn( True )
         self.chip_select( False )
 
-        print("spi object=", self.spi)
+#        print("spi object=", self.spi)
         print("Set up YMF825")
         self.init_YMF825()
 
@@ -1380,7 +1387,7 @@ class ymf825pico_class:
         # Equalizer1 must be path-through filter
         self.synth_equalizer_names[0] = "EDITING"
         self.synth_equalizer_names[1] = "ALL PATH"
-        print("EQ PARAMS:", self.synth_equalizer_settings[1])
+#        print("EQ PARAMS:", self.synth_equalizer_settings[1])
         for eq in range(3):
             self.synth_equalizer_settings[1][eq]["ceq0"] = 1.0
             self.synth_equalizer_settings[1][eq]["ceq1"] = 0.0

@@ -847,7 +847,7 @@ def values_tone_names_in_databank(databank):
     try:
         file = open( "YMF825ToneName" + str(databank) + ".txt", encoding = YMF825pico.file_encode )
     except OSError as e:
-        print(e)
+#        print(e)
         tone_list = []
     else:
         tone_list = json.load(file)
@@ -1173,7 +1173,7 @@ def on_select_tone_copy_tone(menu, prev_menu):
     try:
         file = open( "YMF825ToneName" + str(databank_copy_to) + ".txt", encoding = YMF825pico.file_encode )
     except OSError as e:
-        print(e)
+#        print(e)
         tone_list = []
     else:
         tone_list = json.load(file)
@@ -1212,7 +1212,7 @@ def on_change_copy_parm():
     try:
         file = open("YMF825ToneParm" + str(databank_copy_to) + ".txt", encoding = YMF825pico.file_encode)
     except OSError as e:
-        print(e)
+#        print(e)
         return
     else:
         tone_parm = json.load(file)
@@ -1230,7 +1230,8 @@ def on_change_copy_parm():
     try:
         file = open("YMF825ToneParm" + str(databank_copy_to) + ".txt", "w", encoding = YMF825pico.file_encode)
     except OSError as e:
-        print(e)
+        pass
+#        print(e)
     else:
         json.dump(tone_parm, file)
         file.close()
@@ -1418,7 +1419,7 @@ def on_calc_biquad_filter():
         b1 = -2 * cosw0 / a0
         b2 = (1 + alpha) / a0
     else:
-        print("UNKNOWN FILTER TYPE.")
+#        print("UNKNOWN FILTER TYPE.")
         return
 
     # Set parameters
@@ -1933,7 +1934,7 @@ def piano_role_player(score_file="score1.txt", file_encode="utf-8"):
         file.close()
 
     except OSError as e:
-        print(e)
+#        print(e)
         return
 
 
@@ -2006,7 +2007,7 @@ def midi_interface(midi_events, length):
                 # modulation --> reset timbre_offset
                 elif midi_note == 0x01:
                     timbre_offset = 0
-                    print("MIDI: Modulation")
+#                    print("MIDI: Modulation")
     
         elif (midi_cmd & 0xf0) == 0xe0:
             if left >= 2:
@@ -2064,7 +2065,7 @@ def init():
         rte["A_SW"] = Pin(rte["A_PIN"], Pin.IN, Pin.PULL_UP)
         rte["B_SW"] = Pin(rte["B_PIN"], Pin.IN, Pin.PULL_UP)
 
-    print("init() end.")
+    print("init end.")
 
 
 #Main
@@ -2081,7 +2082,7 @@ if __name__=='__main__':
     init()
 
     # YMF825 control class
-    print("YMF825 PICO CLASS")
+#    print("YMF825 PICO CLASS")
     YMF825pico.turn_on_synthesizer()
     YMF825pico.setup_synth()
 
@@ -2115,6 +2116,6 @@ if __name__=='__main__':
             get_rotary_encoders()
 
 
-    print("QUIT.")
+#    print("QUIT.")
 
 
