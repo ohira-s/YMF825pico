@@ -3,28 +3,29 @@
 - FM synthesizer with 7 algorithms and 4 operators (A, B, C, D).
 - 29 wave forms each operator.
 - 16 voices.  Each voice can have different tone.
-- Multi Timbre. A timbre consists of 4 tones (0..3).
-
-  (MIDI Channel + 1) % 4 corresponds to a tone number to play.
+- Multi Timbre. A timbre consists of 4 portions (0..3) with each tone.
+- Each portion in a timbre has a MIDI channel to play with both note on and off.
 - You can save 10 Timbre sets and 20 tones in PICO.
 
-    MIDI CH1 ---> TIMBREx-PORTION0 ---> TONE0..19 / VOICES0..15 / VOLUME0..31
+    MIDI CHa ---> TIMBREx-PORTION0 ---> DATABANK0..9:TONE0..19 ---> VOICES0..15 / VOLUME0..31
 
-    MIDI CH2 ---> TIMBREx-PORTION1 ---> TONE0..19 / VOICES0..15 / VOLUME0..31
+    MIDI CHb ---> TIMBREx-PORTION1 ---> DATABANK0..9:TONE0..19 ---> VOICES0..15 / VOLUME0..31
 
-    MIDI CH3 ---> TIMBREx-PORTION2 ---> TONE0..19 / VOICES0..15 / VOLUME0..31
+    MIDI CHc ---> TIMBREx-PORTION2 ---> DATABANK0..9:TONE0..19 ---> VOICES0..15 / VOLUME0..31
 
-    MIDI CH4 ---> TIMBREx-PORTION3 ---> TONE0..19 / VOICES0..15 / VOLUME0..31
-- 3 bands equalizer (Biquad Filters). 
+    MIDI CHd ---> TIMBREx-PORTION3 ---> DATABANK0..9:TONE0..19 ---> VOICES0..15 / VOLUME0..31
+- 3 layers biquad filters are placed following the sound output. 
 - 10 databanks in PICO, each databank has 20 timbre sets, 20 tones and 10 equalizers.
 
-| BLOCK:     | DATABANK  | TIMBRE  | PORTION  | MIDI CH   | VOICE        | TONE  | EQUALIZER  |
+| BLOCK:     | DATABANK  | TIMBRE  | PORTION  | MIDI CH   | VOICE        | DATABANK:TONE  | EQUALIZER  |
 |----------- | --------- | ------- | -------- | --------- | ------------ | ----- | ---------- |
 | QTY:       | 0..9      | 0..19   | 0..3     | 1..16     | 0..15        | 0..19 | 0..9       |
-| STRUCTURE: | DATABANKi | TIMBREj | PORTION0 | 1,5,9,13  | V0from..V0to | TONEp | EQUALIZERx |
-|            |           |         | PORTION1 | 2,6,10,14 | V1from..V1to | TONEq |            |
-|            |           |         | PORTION2 | 3,7,11,15 | V2from..V2to | TONEr |            |
-|            |           |         | PORTION3 | 4,8,12,16 | V3from..V3to | TONEs |            |
+| STRUCTURE: | DATABANKi | TIMBREj | PORTION0 | a  | V0from..V0to | DATABANKt:TONEp | EQUALIZERx |
+|            |           |         | PORTION1 | b | V1from..V1to | DATABANKu:TONEq |            |
+|            |           |         | PORTION2 | c | V2from..V2to | DATABANKv:TONEr |            |
+|            |           |         | PORTION3 | d | V3from..V3to | DATABANKw:TONEs |            |
+
+- You can assign same MIDI channel to any timbre potion.  In this case, all tones with the same MIDI channel will be played at the same time.
 
 
 ## MIDI Controles
@@ -241,21 +242,25 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         | VOICE L0        | 0..15           | Lower scale to play with this tone. |
         | VOICE H0        | 0..15           | Upper scale to play with this tone. |
         | VOLUME0         | 0..31           | Tone volume. |
+        | MIDI CH0        | 1..16           | MIDI channel. |
         | DATABANK1       | 0..9            | Select a databank number of the tone1. |
         | TONE1           | ***tone list*** | Select a tone for MIDI channel 2. |
         | VOICE L1        | 0..15           | Lower voice number to assign this tone. |
         | VOICE H1        | 0..15           | Upper voice number to assign this tone. |
         | VOLUME1         | 0..31           | Tone volume. |
+        | MIDI CH1        | 1..16           | MIDI channel. |
         | DATABANK2       | 0..9            | Select a databank number of the tone2. |
         | TONE2           | ***tone list*** | Select a tone for MIDI channel 3. |
         | VOICE L2        | 0..15           | Lower scale to play with this tone. |
         | VOICE H2        | 0..15           | Upper scale to play with this tone. |
         | VOLUME2         | 0..31           | Tone volume. |
+        | MIDI CH2        | 1..16           | MIDI channel. |
         | DATABANK3       | 0..9            | Select a databank number of the tone3. |
         | TONE3           | ***tone list*** | Select a tone for MIDI channel 4. |
         | VOICE L3        | 0..15           | Lower scale to play with this tone. |
         | VOICE H3        | 0..15           | Upper scale to play with this tone. |
         | VOLUME3         | 0..31           | Tone volume. |
+        | MIDI CH3        | 1..16           | MIDI channel. |
         | SAVE            | NO              | Nothing happens. |
         |                 | SURE?           | Nothing happens. |
         |                 | YES             | Save as new name. |
@@ -472,32 +477,68 @@ An OLED display shows you the menus and the values.  THe layout is as below.
 
     - #### **Items and Values**
         | Items           | Values          | Descriptions |
-        | --------------- | --------------- | ------------ |
-        | DECIMAL PLC     | 0..9            | Choose a decimal place to edit. 0 means the integer part. |
-        | EQ1 IN B0       | -2.0 .. 2.0     | 1st biquad filter parameter b0. |
-        | EQ1 IN B1       | -2.0 .. 2.0     | 1st biquad filter parameter b1. |
-        | EQ1 IN B2       | -2.0 .. 2.0     | 1st biquad filter parameter b2. |
-        | EQ1 FB A1       | -2.0 .. 2.0     | 1st biquad filter parameter a1. |
-        | EQ1 FB A2       | -2.0 .. 2.0     | 1st biquad filter parameter a2. |
-        | EQ2 IN B0       | -2.0 .. 2.0     | 2nd biquad filter parameter b0. |
-        | EQ2 IN B1       | -2.0 .. 2.0     | 2nd biquad filter parameter b1. |
-        | EQ2 IN B2       | -2.0 .. 2.0     | 2nd biquad filter parameter b2. |
-        | EQ2 FB A1       | -2.0 .. 2.0     | 2nd biquad filter parameter a1. |
-        | EQ2 FB A2       | -2.0 .. 2.0     | 2nd biquad filter parameter a2. |
-        | EQ3 IN B0       | -2.0 .. 2.0     | 3rd biquad filter parameter b0. |
-        | EQ3 IN B1       | -2.0 .. 2.0     | 3rd biquad filter parameter b1. |
-        | EQ3 IN B2       | -2.0 .. 2.0     | 3rd biquad filter parameter b2. |
-        | EQ3 FB A1       | -2.0 .. 2.0     | 3rd biquad filter parameter a1. |
-        | EQ3 FB A2       | -2.0 .. 2.0     | 3rd biquad filter parameter a2. |
-        | SAVE            | NO              | Nothing happens. |
-        |                 | SURE?           | Nothing happens. |
-        |                 | YES             | Save as new name. |
-        | CANCEL          | NO              | Nothing happens. |
-        |                 | SURE?           | Nothing happens. |
-        |                 | YES             | Cancel the changes. |
-        | RESET           | NO              | Nothing happens. |
-        |                 | SURE?           | Nothing happens. |
-        |                 | YES             | Reset to the all pass filter. |
+        | ------------ | --------------- | ------------ |
+        | DECIMAL PLC  | 0..9            | Choose a decimal place to edit. 0 means the integer part. |
+        | FLT Type     | DIRECT          | Use parameters directly. |
+        |              | LPF:FcQ         | Calculate parameters for LPF. |
+        |              | HPF:FcQ         | Calculate parameters for HPF. |
+        |              | BPFskt:FcQ      | Calculate parameters for BPFskt. |
+        |              | BPF0db:FcQ      | Calculate parameters for BPF0db. |
+        |              | NOTCH:FcQ       | Calculate parameters for NOTCH. |
+        |              | APF:FcQ         | Calculate parameters for APF. |
+        | Calc FLT     | NO              | Nothing happens. |
+        |              | SURE?           | Nothing happens. |
+        |              | CALC            | Calculate filter parameters. |
+        | EQ1 B0/Fc    | -2.0 .. 2.0     | 1st biquad filter parameter b0. |
+        |              |  0.0 .. 48.0    | 1st cut off frequency Fc1(kHz). |
+        | EQ1 B1/Qv    | -2.0 .. 2.0     | 1st biquad filter parameter b1. |
+        |              |  0.0 .. 10.0    | 1st Q value Qv1. |
+        | EQ1 B2       | -2.0 .. 2.0     | 1st biquad filter parameter b2. |
+        | EQ1 A1       | -2.0 .. 2.0     | 1st biquad filter parameter a1. |
+        | EQ1 A2       | -2.0 .. 2.0     | 1st biquad filter parameter a2. |
+        | FLT Type     | DIRECT          | Use parameters directly. |
+        |              | LPF:FcQ         | Calculate parameters for LPF. |
+        |              | HPF:FcQ         | Calculate parameters for HPF. |
+        |              | BPFskt:FcQ      | Calculate parameters for BPFskt. |
+        |              | BPF0db:FcQ      | Calculate parameters for BPF0db. |
+        |              | NOTCH:FcQ       | Calculate parameters for NOTCH. |
+        |              | APF:FcQ         | Calculate parameters for APF. |
+        | Calc FLT     | NO              | Nothing happens. |
+        |              | SURE?           | Nothing happens. |
+        |              | CALC            | Calculate filter parameters. |
+        | EQ2 B0/Fc    | -2.0 .. 2.0     | 2nd biquad filter parameter b0. |
+        |              |  0.0 .. 48.0    | 1st cut off frequency Fc2(kHz). |
+        | EQ2 B1/Qv    | -2.0 .. 2.0     | 2nd biquad filter parameter b1. |
+        |              |  0.0 .. 10.0    | 1st Q value Qv2. |
+        | EQ2 B2       | -2.0 .. 2.0     | 2nd biquad filter parameter b2. |
+        | EQ2 A1       | -2.0 .. 2.0     | 2nd biquad filter parameter a1. |
+        | EQ2 A2       | -2.0 .. 2.0     | 2nd biquad filter parameter a2. |
+        | FLT Type     | DIRECT          | Use parameters directly. |
+        |              | LPF:FcQ         | Calculate parameters for LPF. |
+        |              | HPF:FcQ         | Calculate parameters for HPF. |
+        |              | BPFskt:FcQ      | Calculate parameters for BPFskt. |
+        |              | BPF0db:FcQ      | Calculate parameters for BPF0db. |
+        |              | NOTCH:FcQ       | Calculate parameters for NOTCH. |
+        |              | APF:FcQ         | Calculate parameters for APF. |
+        | Calc FLT     | NO              | Nothing happens. |
+        |              | SURE?           | Nothing happens. |
+        |              | CALC            | Calculate filter parameters. |
+        | EQ3 B0/Fc    | -2.0 .. 2.0     | 3rd biquad filter parameter b0. |
+        |              |  0.0 .. 48.0    | 1st cut off frequency Fc3(kHz). |
+        | EQ3 B1/Qv    | -2.0 .. 2.0     | 3rd biquad filter parameter b1. |
+        |              |  0.0 .. 10.0    | 1st Q value Qv3. |
+        | EQ3 B2       | -2.0 .. 2.0     | 3rd biquad filter parameter b2. |
+        | EQ3 A1       | -2.0 .. 2.0     | 3rd biquad filter parameter a1. |
+        | EQ3 A2       | -2.0 .. 2.0     | 3rd biquad filter parameter a2. |
+        | SAVE         | NO              | Nothing happens. |
+        |              | SURE?           | Nothing happens. |
+        |              | YES             | Save as new name. |
+        | CANCEL       | NO              | Nothing happens. |
+        |              | SURE?           | Nothing happens. |
+        |              | YES             | Cancel the changes. |
+        | RESET        | NO              | Nothing happens. |
+        |              | SURE?           | Nothing happens. |
+        |              | YES             | Reset to the all pass filter. |
         - A biquad filter's equation is as below.
 
                   b0 + b1/z + b2/z/z
@@ -505,6 +546,9 @@ An OLED display shows you the menus and the values.  THe layout is as below.
           H(z) = -----------------------
 
                   a0 + a1/z + a2/z/z        : a0-->0.0
+
+        - If FLT Type is DIRECT, parameter values B0, B1, B2, A1, A2 are used as filter parameters directly.
+        - If a filter name is selected as FLT Type, you should set a cut off frequency (kHz) into a B0/Fc, and a Q value into a B1/Qv.  Then selecting CALC in the Calc FLT, the filter parameters are calculated in the B0, B1, B2, A1, A2 rows.
 
 
 # **Music Sequencer File Format**

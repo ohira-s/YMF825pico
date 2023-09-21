@@ -40,12 +40,14 @@
 #   01.211 2023/09/13: GUI for Algorithm
 #   01.212 2023/09/19: Reduce global variable memory
 #   01.300 2023/09/19: Tones in the timbre can be selected from the other databank
+#   01.400 2023/09/21: Bi quad filter parameters calculation (LPF, HPF, BPFskt, BPF0db, NOTCH, APF, PEAK)
+#   01.500 2023/09/21: MIDI channel can be assigned to each timbre portion
 #############################################################################
 
 from ymf825pico import ymf825pico_class
 from machine import Pin, I2C, SPI, UART
 import ssd1306
-import time, os, json
+import time, os, json, math
 import gc
 
 # UART test
@@ -115,10 +117,10 @@ YMF825_PARM = [
     ("Sustn RT A", "Sus R1", 16, None),
     ("Reles RT A", "Release R1", 16, None),
     ("Vibrt EN A", "Enable Vib1", 2, PARM_TEXT_OFF_ON),
-    ("Vibrt DP A", "Depth Of Vib1", 4, None),
+    ("Vibrt DP A", "Depth Vib1", 4, None),
     ("Amp M EN A", "Enable Amp Mod1", 2, PARM_TEXT_OFF_ON),
-    ("Amp M DP A", "Depth Of Amp Mod1", 4, None),
-    ("Key S EN A", "Key Scale Sens1", 2, PARM_TEXT_OFF_ON),
+    ("Amp M DP A", "Depth Amp Mod1", 4, None),
+    ("Key S EN A", "KeySc Sens1", 2, PARM_TEXT_OFF_ON),
     ("Key S LV A", "KSL Sens1", 4, None),
     ("IgnKy OF A", "Ign Key Off1", 2, PARM_TEXT_OFF_ON),
     # OP2
@@ -133,10 +135,10 @@ YMF825_PARM = [
     ("Sustn RT B", "Sus R2", 16, None),
     ("Reles RT B", "Release R2", 16, None),
     ("Vibrt EN B", "Enable Vib2", 2, PARM_TEXT_OFF_ON),
-    ("Vibrt DP B", "Depth Of Vib2", 4, None),
+    ("Vibrt DP B", "Depth Vib2", 4, None),
     ("Amp M EN B", "Enable Amp Mod2", 2, PARM_TEXT_OFF_ON),
-    ("Amp M DP B", "Depth Of Amp Mod2", 4, None),
-    ("Key S EN B", "Key Scale Sens2", 2, PARM_TEXT_OFF_ON),
+    ("Amp M DP B", "Depth Amp Mod2", 4, None),
+    ("Key S EN B", "KeySc Sens2", 2, PARM_TEXT_OFF_ON),
     ("Key S LV B", "KSL Sens2", 4, None),
     ("IgnKy OF B", "Ign Key Off2", 2, PARM_TEXT_OFF_ON),
     # OP3
@@ -151,10 +153,10 @@ YMF825_PARM = [
     ("Sustn RT C", "Sus R3", 16, None),
     ("Reles RT C", "Release R3", 16, None),
     ("Vibrt EN C", "Enable Vib3", 2, PARM_TEXT_OFF_ON),
-    ("Vibrt DP C", "Depth Of Vib3", 4, None),
+    ("Vibrt DP C", "Depth Vib3", 4, None),
     ("Amp M EN C", "Enable Amp Mod3", 2, PARM_TEXT_OFF_ON),
-    ("Amp M DP C", "Depth Of Amp Mod3", 4, None),
-    ("Key S EN C", "Key Scale Sens3", 2, PARM_TEXT_OFF_ON),
+    ("Amp M DP C", "Depth Amp Mod3", 4, None),
+    ("Key S EN C", "KeySc Sens3", 2, PARM_TEXT_OFF_ON),
     ("Key S LV C", "KSL Sens3", 4, None),
     ("IgnKy OF C", "Ign Key Off3", 2, PARM_TEXT_OFF_ON),
     # OP4
@@ -169,10 +171,10 @@ YMF825_PARM = [
     ("Sustn RT D", "Sus R4", 16, None),
     ("Reles RT D", "Release R4", 16, None),
     ("Vibrt EN D", "Enable Vib4", 2, PARM_TEXT_OFF_ON),
-    ("Vibrt DP D", "Depth Of Vib4", 4, None),
+    ("Vibrt DP D", "Depth Vib4", 4, None),
     ("Amp M EN D", "Enable Amp Mod4", 2, PARM_TEXT_OFF_ON),
-    ("Amp M DP D", "Depth Of Amp Mod4", 4, None),
-    ("Key S EN D", "Key Scale Sens4", 2, PARM_TEXT_OFF_ON),
+    ("Amp M DP D", "Depth Amp Mod4", 4, None),
+    ("Key S EN D", "KeySc Sens4", 2, PARM_TEXT_OFF_ON),
     ("Key S LV D", "KSL Sens4", 4, None),
     ("IgnKy OF D", "Ign Key Off4", 2, PARM_TEXT_OFF_ON),
 ]
@@ -180,7 +182,7 @@ YMF825_PARM = [
 # Character list
 CHARS_LIST= ["="]   # No change
 CHARS_LIST += [chr(ch) for ch in list(range(0x41,0x5b))]
-CHARS_LIST += [chr(ch) for ch in list(range(0x61,0x7b))]
+#CHARS_LIST += [chr(ch) for ch in list(range(0x61,0x7b))]
 CHARS_LIST += [chr(ch) for ch in list(range(0x30,0x3a))]
 CHARS_LIST += [" "]
 
@@ -450,7 +452,7 @@ def show_menu(item_move_dir, slide=0, str_head=True):
             if menu_item in gui["items"]:
                 if gui_item_menu_exit is None:
                     gui_item_menu_exit = get_next_to_gui_editor(gui["items"], menu_item)
-                    print("NEXT ITEM MENU=", gui_item_menu_exit)
+#                    print("NEXT ITEM MENU=", gui_item_menu_exit)
 
                 gui["func"](gui)
                 display.show()
@@ -667,7 +669,7 @@ def on_play_demo(demo=None, clear_menu_value=True):
 
 #    print("PLAY DEMO=", demo)
     piano_role_player(score_file=demo + ".txt")
-    print("DEMO END:", menu_category, menu_item, SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"])
+#    print("DEMO END:", menu_category, menu_item, SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"])
     if clear_menu_value:
         SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"] = 0
         menu_value = 0
@@ -794,6 +796,8 @@ def make_edit_timbre_edit_menu(menu, prev_menu):
     for volume in list(range(32)):
         values_volume.append({"name": str(volume), "on_select": on_change_timbre_edit, "on_selected": None})
 
+    values_midich = values_volume[1:17]
+
     if db_values_tone is not None:
         del db_values_tone
     db_values_tone = [None] * YMF825pico.DATABANK_MAX
@@ -810,7 +814,7 @@ def make_edit_timbre_edit_menu(menu, prev_menu):
             db = YMF825pico.get_timbre_databank(timbre_id, portion)
             item.append({"name": "DATABANK{}".format(portion), "on_select": None, "on_selected": None, "selected": db, "VALUE": values_databank})
 
-            print("DATABANK IS ", timbre_id, portion, db)
+#            print("DATABANK IS ", timbre_id, portion, db)
             if db_values_tone[db] is None:
                 db_values_tone[db] = values_tone_names_in_databank(db)
             item.append({"name": "TONE{}".format(portion), "on_select": None, "on_selected": None, "selected": YMF825pico.get_timbre_tone(timbre_id, portion), "VALUE": db_values_tone[db]})
@@ -819,6 +823,7 @@ def make_edit_timbre_edit_menu(menu, prev_menu):
             item.append({"name": "VOICE L{}".format(portion), "on_select": None, "on_selected": None, "selected": YMF825pico.get_timbre_voice_from(timbre_id, portion), "VALUE": values_voice})
             item.append({"name": "VOICE H{}".format(portion), "on_select": None, "on_selected": None, "selected": YMF825pico.get_timbre_voice_to(timbre_id, portion), "VALUE": values_voice})
             item.append({"name": "VOLUME{}".format(portion), "on_select": None, "on_selected": None, "selected": YMF825pico.get_timbre_volume(timbre_id, portion), "VALUE": values_volume})
+            item.append({"name": "MIDI CH{}".format(portion), "on_select": None, "on_selected": None, "selected": YMF825pico.get_timbre_portion_midich(timbre_id, portion) - 1, "VALUE": values_midich})
 
         item.append({"name": "SAVE",   "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_save_timbre_edit, "on_selected": None}, {"name": None}]})
         item.append({"name": "CANCEL", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_cancel_timbre_edit, "on_selected": None}, {"name": None}]})
@@ -838,7 +843,7 @@ def values_tone_names_in_databank(databank):
     global menu_main, menu_category, menu_item, menu_value
 
     #  SOS: Load tone name list in the databank
-    print("DATABANK = ", databank)
+#    print("DATABANK = ", databank)
     try:
         file = open( "YMF825ToneName" + str(databank) + ".txt", encoding = YMF825pico.file_encode )
     except OSError as e:
@@ -862,7 +867,7 @@ def values_tone_names_in_databank(databank):
 def on_change_timbre_databank():
     global db_values_tone
     global menu_main, menu_category, menu_item, menu_value
-    print("TIMBRE PORTION, DATABANK=", menu_item, menu_value)
+#    print("TIMBRE PORTION, DATABANK=", menu_item, menu_value)
     
     # Selected databank
     SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"] = menu_value
@@ -892,7 +897,7 @@ def on_save_timbre_edit():
     # Change the current timbre settings
 #    print("CHANGE TIMBRE SETTINGS[{}]".format(menu_category))
     for portion in list(range(YMF825pico.TIMBRE_PORTIONS)):
-        i = portion * 5
+        i = portion * 6
         databank = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["selected"]
         YMF825pico.set_timbre_portion_databank(menu_category, portion, databank)
 
@@ -905,6 +910,10 @@ def on_save_timbre_edit():
 
         volume = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i+4]["selected"]
         YMF825pico.set_timbre_portion_volume(menu_category, portion, volume)
+
+#        midich = SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i+5]["selected"]
+#        YMF825pico.set_timbre_portion_midich(menu_category, portion, midich)
+        YMF825pico.set_timbre_portion_midich(menu_category, portion, SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i+5]["selected"] + 1)
 
     # Save timbre data
     YMF825pico.save_timbre_data()
@@ -1004,7 +1013,7 @@ def on_select_tone_edit_tone(menu, prev_menu):
 
     # Get tone data for editing
     tone_hash = YMF825pico.copy_tone_data_for_edit(menu_category)
-    print("TONE HASH[{}]:".format(menu_category))
+#    print("TONE HASH[{}]:".format(menu_category))
 
     values_parm = []
     for num in list(range(32)):
@@ -1013,7 +1022,7 @@ def on_select_tone_edit_tone(menu, prev_menu):
     item = []
     for parm_def in YMF825_PARM:
         parm = parm_def[0]        
-        print("PARM[{}/{}] = {}".format(parm, parm_def[1], tone_hash[parm_def[1]]))
+#        print("PARM[{}/{}] = {}".format(parm, parm_def[1], tone_hash[parm_def[1]]))
         if parm_def[3] is None:
             item.append({"name": parm, "on_select": on_select_tone_parm, "on_selected": None, "selected": tone_hash[parm_def[1]], "VALUE": values_parm[0:parm_def[2]]})
         else:
@@ -1152,7 +1161,7 @@ def on_select_tone_copy_tone(menu, prev_menu):
     for bank in list(range(10)):
         values_parm.append({"name": str(bank), "on_select": None, "on_selected": on_change_databank_copy_to})
     menu_value = databank_copy_to
-    print("ITEM DATABANK=", databank_copy_to, menu_item)
+#    print("ITEM DATABANK=", databank_copy_to, menu_item)
     item.append({"name": "DATABANK", "on_select": None, "on_selected": None, "selected": databank_copy_to, "VALUE": values_parm})
 
     values_parm = [
@@ -1197,7 +1206,7 @@ def on_change_copy_parm():
     global menu_main, menu_category, menu_item, menu_value, prev_parm_hash
 
     tone_copy_to = menu_item - 1
-    print("Copy tone {} to DATABANK{}:{}.".format(menu_category, databank_copy_to, tone_copy_to))
+#    print("Copy tone {} to DATABANK{}:{}.".format(menu_category, databank_copy_to, tone_copy_to))
 
     # Load the databank tones to copy to
     try:
@@ -1212,11 +1221,11 @@ def on_change_copy_parm():
     # Get tone data for editing
     tone_hash = YMF825pico.copy_tone_data_for_edit(menu_category)
     sound_param = YMF825pico.make_sound_param(tone_hash)
-    print("DATABANK TONES=", tone_parm)
-    print("TONE TO COPY  =", tone_hash)
-    print("PARM TO COPY  =", sound_param)
+#    print("DATABANK TONES=", tone_parm)
+#    print("TONE TO COPY  =", tone_hash)
+#    print("PARM TO COPY  =", sound_param)
     tone_parm[tone_copy_to] = sound_param
-    print("COPY PARAMS   =", tone_parm)
+#    print("COPY PARAMS   =", tone_parm)
 
     try:
         file = open("YMF825ToneParm" + str(databank_copy_to) + ".txt", "w", encoding = YMF825pico.file_encode)
@@ -1274,7 +1283,7 @@ def on_save_equalizer_name():
         ch = CHARS_LIST[SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["selected"]]
         name += ch if ch != CHARS_LIST[0] else SYNTH_MENU[menu_main]["CATEGORY"][menu_category]["ITEM"][i]["name"]
 
-    print("CHANGE EQUALIZER NAME[{}]={}".format(menu_category, name))
+#    print("CHANGE EQUALIZER NAME[{}]={}".format(menu_category, name))
     YMF825pico.rename_equalizer(menu_category, name)
 
     # Save equalizer data
@@ -1287,7 +1296,7 @@ def on_save_equalizer_name():
 
 
 def on_cancel_equalizer_name():
-    print("CANCEl EQ NAME")
+#    print("CANCEl EQ NAME")
     on_cancel_timbre_name()
 
 
@@ -1299,6 +1308,15 @@ def make_edit_equalizer_edit_menu(menu, prev_menu):
 
     clear_menu_memory(prev_menu, True, True, True)
 
+    # Values for dicimal places
+    values = []
+    for i in list(range(10)):
+        values.append({"name": str(i), "on_select": None, "on_selected": on_change_decimal_places})
+
+    # For the biquad filter equation
+    bqeq_types = {"name": "FLT Type", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "DIRECT", "on_select": None, "on_selected": on_change_filter_type}, {"name": "LPF:FcQ", "on_select": None, "on_selected": on_change_filter_type}, {"name": "HPF:FcQ", "on_select": None, "on_selected": on_change_filter_type}, {"name": "BPFskt:FcQ", "on_select": None, "on_selected": on_change_filter_type}, {"name": "BPF0db:FcQ", "on_select": None, "on_selected": on_change_filter_type}, {"name": "NOTCH:FcQ", "on_select": None, "on_selected": on_change_filter_type}, {"name": "APF:FcQ", "on_select": None, "on_selected": on_change_filter_type}]}
+    bqeq_calc  = {"name": "Calc FLT", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "CALC", "on_select": None, "on_selected": on_calc_biquad_filter}, {"name": None}]}
+
     equalizer_value_index = 0
     eq_list = YMF825pico.get_synth_equalizer_names()
     SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"] = []
@@ -1306,32 +1324,32 @@ def make_edit_equalizer_edit_menu(menu, prev_menu):
     for equalizer in eq_list:
 
         eq_parm = YMF825pico.get_equalizer_parameters(eq_id)
-        print("EQ PARM[", eq_id, "]=", eq_parm)
-
-        values = []
-        for i in list(range(10)):
-            values.append({"name": str(i), "on_select": None, "on_selected": on_change_decimal_places})
+#        print("EQ PARM[", eq_id, "]=", eq_parm)
 
         # Current tone name as ITEM menu
         item = [{"name": "DECIMAL PL", "on_select": None, "on_selected": None, "selected": 0, "VALUE": values}]
         for i in list(range(3)):
+            item.append(bqeq_types)
+            item.append(bqeq_calc)
+
             eqname = "EQ" + str(i) + " "
             val = str(eq_parm[i]["ceq0"])
-            print("STR=", val)
-            item.append({"name": eqname + "IN B0", "on_select": on_change_equalizer_parameter, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
+#            print("STR=", val)
+            item.append({"name": eqname + "B0/Fc", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
 
             val = str(eq_parm[i]["ceq1"])
-            item.append({"name": eqname + "IN B1", "on_select": on_change_equalizer_parameter, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
+            item.append({"name": eqname + "B1/Qv", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
 
             val = str(eq_parm[i]["ceq2"])
-            item.append({"name": eqname + "IN B2", "on_select": on_change_equalizer_parameter, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
+            item.append({"name": eqname + "B2", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
 
             val = str(eq_parm[i]["ceq3"])
-            item.append({"name": eqname + "IN A1", "on_select": on_change_equalizer_parameter, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
+            item.append({"name": eqname + "A1", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
 
             val = str(eq_parm[i]["ceq4"])
-            item.append({"name": eqname + "IN A2", "on_select": on_change_equalizer_parameter, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
+            item.append({"name": eqname + "A2", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}, {"name": val, "on_select": on_change_eq_param, "on_selected": None}]})
 
+        item.append({"name": "LISTEN",   "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "PLAY", "on_select": None, "on_selected": on_change_equalizer_parameter}, {"name": None}]})
         item.append({"name": "SAVE",   "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_save_equalizer_edit, "on_selected": None}, {"name": None}]})
         item.append({"name": "CANCEL", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_cancel_equalizer_edit, "on_selected": None}, {"name": None}]})
         item.append({"name": "RESET", "on_select": None, "on_selected": None, "selected": 0, "VALUE": [{"name": "NO", "on_select": None, "on_selected": None}, {"name": "SURE?", "on_select": None, "on_selected": None}, {"name": "YES", "on_select": on_reset_equalizer_edit, "on_selected": None}, {"name": None}]})
@@ -1340,18 +1358,94 @@ def make_edit_equalizer_edit_menu(menu, prev_menu):
         eq_id += 1
 
 
+# Change the filter type to calculate
+def on_change_filter_type():
+    SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"] = menu_value
+
+
+# Calculate the biquad filter parameters
+def on_calc_biquad_filter():
+    flt_id = SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item-1]["selected"]
+    flt_type = SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item-1]["VALUE"][flt_id]["name"]
+
+    # Cut off frequency and Q value (fc kHz, YMF825 sampling frequency is always 48.000 kHz)
+    fc = float(SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item+1]["VALUE"][0]["name"])
+    qv = float(SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item+2]["VALUE"][0]["name"])
+
+    # Zero clear the Fc and Qv
+    if fc < 0.0 or qv < 0.0:
+        for i in list(range(3)):
+            SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item+1]["VALUE"][i]["name"] = "0.0"
+            SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item+2]["VALUE"][i]["name"] = "0.0"
+        SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"] = 0
+        show_menu(0)
+        return
+
+    # Calculate the filter parameters
+    if qv < 0.01:
+        qv = 0.01
+
+#    print("BIQUAD FILTER:{}, Fc={}, Q={}".format(flt_type, fc, qv))
+    w0 = math.pi * 2 * fc / 48.000
+    alpha = math.sin(w0) / (qv + qv)
+    cosw0 = math.cos(w0)
+    a0 = 1.0 + alpha
+    a1 = cosw0 * 2 / a0
+    a2 = (alpha - 1.0) / a0
+
+    if flt_type == "LPF:FcQ":
+        b0 = (1.0 - cosw0) / (a0 + a0)
+        b1 = (1.0 - cosw0) / a0
+        b2 = b0
+    elif flt_type == "HPF:FcQ":
+        b0 = (1.0 + cosw0) / (a0 + a0)
+        b1 = -(1.0 + cosw0) / a0
+        b2 = b0
+    elif flt_type == "BPFskt:FcQ":
+        b0 = qv * alpha / a0
+        b1 = 0
+        b2 = -b0
+    elif flt_type == "BPF0db:FcQ":
+        b0 = alpha / a0
+        b1 = 0
+        b2 = -b0
+    elif flt_type == "NOTCH:FcQ":
+        b0 = 1 / a0
+        b1 = -2 * cosw0 / a0
+        b2 = b0
+    elif flt_type == "APF:FcQ":
+        b0 = (1 - alpha) / a0
+        b1 = -2 * cosw0 / a0
+        b2 = (1 + alpha) / a0
+    else:
+        print("UNKNOWN FILTER TYPE.")
+        return
+
+    # Set parameters
+#    print("PARMS=", b0, b1, b2, a1, a2)
+    for i in list(range(3)):
+        SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item+1]["VALUE"][i]["name"] = str(b0)
+        SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item+2]["VALUE"][i]["name"] = str(b1)
+        SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item+3]["VALUE"][i]["name"] = str(b2)
+        SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item+4]["VALUE"][i]["name"] = str(a1)
+        SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item+5]["VALUE"][i]["name"] = str(a2)
+
+    SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"] = 0
+    show_menu(0)
+
+
 # Change equalizer parameter
-def on_change_equalizer_parameter(menu, prev_menu):
+def on_change_equalizer_parameter():
     # Set equalizer and play demo
-    if prev_menu <= 15:
-        save_equalizer_edit()
-        YMF825pico.set_synth_equalizer(menu_category)
-        on_play_demo("demo1", False)
+    save_equalizer_edit()
+    YMF825pico.set_synth_equalizer(menu_category)
+    on_play_demo("demo1", False)
 
 
 # Change the decimal places
 def on_change_decimal_places():
     SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][menu_item]["selected"] = menu_value
+
 
 # Change an equalizer parameter
 def on_change_eq_param():
@@ -1360,16 +1454,16 @@ def on_change_eq_param():
     # Value move direction
     sign = 0
     if menu_value == 0 and equalizer_value_index == 2:
-        print("plus")
+#        print("plus")
         sign = 1
     elif menu_value == 2 and equalizer_value_index == 0:
-        print("minus")
+#        print("minus")
         sign = -1
     elif menu_value > equalizer_value_index:
-        print("PLUS")
+#        print("PLUS")
         sign = 1
     elif menu_value < equalizer_value_index:
-        print("MINUS")
+#        print("MINUS")
         sign = -1
         
     equalizer_value_index = menu_value
@@ -1390,15 +1484,15 @@ def on_change_eq_param():
 
 # Save the edited equalize parameters
 def save_equalizer_edit():
-    print("on_save_equalizer_edit")
+#    print("on_save_equalizer_edit")
     eq0 = {}
     eq1 = {}
     eq2 = {}
     for parm in list(range(5)):
         ceq = "ceq" + str(parm)
-        eq0[ceq] = float(SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][parm +  1]["VALUE"][0]["name"])
-        eq1[ceq] = float(SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][parm +  6]["VALUE"][0]["name"])
-        eq2[ceq] = float(SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][parm + 11]["VALUE"][0]["name"])
+        eq0[ceq] = float(SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][parm +  3]["VALUE"][0]["name"])
+        eq1[ceq] = float(SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][parm + 10]["VALUE"][0]["name"])
+        eq2[ceq] = float(SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][parm + 17]["VALUE"][0]["name"])
 
 #    print("SAVE EQ0[", menu_category, "]=", eq0)
 #    print("SAVE EQ1[", menu_category, "]=", eq1)
@@ -1416,7 +1510,7 @@ def on_save_equalizer_edit():
 
 # Cancel equalizer parameters edited
 def on_cancel_equalizer_edit():
-    print("on_cancel_equalizer_edit")
+#    print("on_cancel_equalizer_edit")
     global menu_main, menu_category, menu_item, menu_value
 
     # Clear selected data and initialize the TIMBRE NAME menu
@@ -1428,11 +1522,13 @@ def on_cancel_equalizer_edit():
 
 # Reset equalizer parameter to the all path filter
 def on_reset_equalizer_edit():
-    print("on_reset_equalizer_edit")
-    for i in list(range(15)):
-        val = "1.0" if i % 5 == 0 else "0.0"
-        SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][i + 1]["VALUE"][0]["name"] = val
-        SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][i + 1]["VALUE"][1]["name"] = val
+#    print("on_reset_equalizer_edit")
+    for e in list(range(3,17,7)):
+        for i in list(range(5)):
+            val = "1.0" if i == 0 else "0.0"
+            SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][e+i]["VALUE"][0]["name"] = val
+            SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][e+i]["VALUE"][1]["name"] = val
+            SYNTH_MENU[MAIN_MENU_EQUALIZER_EDIT]["CATEGORY"][menu_category]["ITEM"][e+i]["VALUE"][2]["name"] = val
 
     menu_item = 0
     equalizer_value_index = 0
@@ -1821,7 +1917,7 @@ def piano_role_player(score_file="score1.txt", file_encode="utf-8"):
             for a_line in file:
                 line = repr(a_line)
                 line = line[1:]
-                print("F" + line[0] + "=" + line)
+#                print("F" + line[0] + "=" + line)
 
                 if line[0] == " ":
                     parse_score(line)
@@ -1846,6 +1942,15 @@ timbre_offset = 0
 def midi_interface(midi_events, length):
     global timbre_offset
 
+    midich = {}
+    for p in list(range(YMF825pico.TIMBRE_PORTIONS)):
+        ch = "CH" + str(YMF825pico.get_playing_timbre_midich(p))
+        if ch in midich:
+            midich[ch].append(p)
+        else:
+            midich[ch] = [p]
+#    print("MIDI CH=", midich)
+
     bt = 0
     while bt < length:
         # MIDI command
@@ -1856,26 +1961,32 @@ def midi_interface(midi_events, length):
         # note on: 0x9n (n=0..f: MIDI CH)
         if (midi_cmd & 0xf0) == 0x90:
             if left >= 2:
-                # Chanel -> Timbre
-                timbre = (midi_cmd - 0x90 + timbre_offset) % YMF825pico.TIMBRE_PORTIONS
-                # MIDI note
-                midi_note = midi_events[bt]
-                # MIDI velocity
-                midi_velo = midi_events[bt + 1]
+                ch = "CH" + str(midi_cmd - 0x90 + 1)
+                if ch in midich:
+                    # MIDI note
+                    midi_note = midi_events[bt]
+                    # MIDI velocity
+                    midi_velo = midi_events[bt + 1]
+
+                    for portion in midich[ch]:
+                        YMF825pico.play_by_timbre_note((portion + timbre_offset) % YMF825pico.TIMBRE_PORTIONS, midi_note, midi_velo)
+
                 bt += 2
-                YMF825pico.play_by_timbre_note(timbre, midi_note, midi_velo)
 
         # note off: 0x8n (n=0..f: MIDI CH)
         elif (midi_cmd & 0xf0) == 0x80:
             if left >= 2:
-                # Chanel -> Timbre
-                timbre = (midi_cmd - 0x80 + timbre_offset) % YMF825pico.TIMBRE_PORTIONS
-                # MIDI note
-                midi_note = midi_events[bt]
-                # MIDI velocity
-                midi_velo = int(midi_events[bt + 1] * timbre_volumes[timbre])
+                ch = "CH" + str(midi_cmd - 0x80 + 1)
+                if ch in midich:
+                    # MIDI note
+                    midi_note = midi_events[bt]
+                    # MIDI velocity
+                    midi_velo = midi_events[bt + 1]
+
+                    for portion in midich[ch]:
+                        YMF825pico.stop_by_timbre_note((portion + timbre_offset) % YMF825pico.TIMBRE_PORTIONS, midi_note)
+
                 bt += 2
-                YMF825pico.stop_by_timbre_note(timbre, midi_note)
     
         # Control
         elif (midi_cmd & 0xf0) == 0xb0:
@@ -1975,7 +2086,8 @@ if __name__=='__main__':
     YMF825pico.setup_synth()
 
     setup_module()
-    YMF825pico.play_demo()
+#    YMF825pico.play_demo()
+    piano_role_player("demo1.txt")
 
     show_menu(0)
 

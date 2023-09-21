@@ -47,6 +47,7 @@
 #   01.001 2023/09/04: Databank available
 #   01.002 2023/09/19: Reduce global variable memory
 #   01.300 2023/09/19: Tones in the timbre can be selected from the other databank
+#   01.500 2023/09/21: MIDI channel can be assigned to each timbre portion
 ##################################################################################
 
 from machine import Pin, SPI
@@ -107,7 +108,7 @@ class ymf825pico_class:
             # [ 4]: OP1:Sustain Rate 1111 | Ignore Key Off 0 | Key Scale Sensitivity 111
             "Sus R1":                          {"BYTE":  4, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
             "Ign Key Off1":                        {"BYTE":  4, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
-            "Key Scale Sens1":                 {"BYTE":  4, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
+            "KeySc Sens1":                 {"BYTE":  4, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
             # [ 5]: OP1:Release Rate 1111 | Decay Rate 0000
             "Release R1":                          {"BYTE":  5, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
@@ -122,9 +123,9 @@ class ymf825pico_class:
             "KSL Sens1":            {"BYTE":  7, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0xfc},
 
             # [ 8]: OP1:Depth Of Amp Modulation 111 | Enable Amp Modulation 0 | Depth Of Vibrate 111 | Enable Vibrate 0
-            "Depth Of Amp Mod1":               {"BYTE":  8, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
+            "Depth Amp Mod1":               {"BYTE":  8, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
             "Enable Amp Mod1":                 {"BYTE":  8, "SELF_MASK": 0x01, "SHFT_LEFT": 4, "DATA_MASK": 0xef},
-            "Depth Of Vib1":                      {"BYTE":  8, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
+            "Depth Vib1":                      {"BYTE":  8, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
             "Enable Vib1":                        {"BYTE":  8, "SELF_MASK": 0x01, "SHFT_LEFT": 0, "DATA_MASK": 0xfe},
 
                 # [ 9]: OP1:Multi Control Magnification Frequency 1111 | Detune 0000
@@ -139,7 +140,7 @@ class ymf825pico_class:
             # [11]: OP2:Sustain Rate 1111 | Ignore Key Off 0 | Key Scale Sensitivity 111
             "Sus R2":                          {"BYTE": 11, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
             "Ign Key Off2":                        {"BYTE": 11, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
-            "Key Scale Sens2":                 {"BYTE": 11, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
+            "KeySc Sens2":                 {"BYTE": 11, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
             # [12]: OP2:Release Rate 1111 | Decay Rate 0000
             "Release R2":                          {"BYTE": 12, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
@@ -154,9 +155,9 @@ class ymf825pico_class:
             "KSL Sens2":            {"BYTE": 14, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0xfc},
 
             # [15]: OP2:Depth Of Amp Modulation 111 | Enable Amp Modulation 0 | Depth Of Vibrate 111 | Enable Vibrate 0
-            "Depth Of Amp Mod2":               {"BYTE": 15, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
+            "Depth Amp Mod2":               {"BYTE": 15, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
             "Enable Amp Mod2":                 {"BYTE": 15, "SELF_MASK": 0x01, "SHFT_LEFT": 4, "DATA_MASK": 0xef},
-            "Depth Of Vib2":                      {"BYTE": 15, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
+            "Depth Vib2":                      {"BYTE": 15, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
             "Enable Vib2":                        {"BYTE": 15, "SELF_MASK": 0x01, "SHFT_LEFT": 0, "DATA_MASK": 0xfe},
 
             # [16]: OP2:Multi Control Magnification Frequency 1111 | Detune 0000
@@ -171,7 +172,7 @@ class ymf825pico_class:
             # [18]: OP3:Sustain Rate 1111 | Ignore Key Off 0 | Key Scale Sensitivity 111
             "Sus R3":                          {"BYTE": 18, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
             "Ign Key Off3":                        {"BYTE": 18, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
-            "Key Scale Sens3":                 {"BYTE": 18, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
+            "KeySc Sens3":                 {"BYTE": 18, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
             # [19]: OP3:Release Rate 1111 | Decay Rate 0000
             "Release R3":                          {"BYTE": 19, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
@@ -186,9 +187,9 @@ class ymf825pico_class:
             "KSL Sens3":            {"BYTE": 21, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0xfc},
 
             # [22]: OP3:Depth Of Amp Modulation 111 | Enable Amp Modulation 0 | Depth Of Vibrate 111 | Enable Vibrate 0
-            "Depth Of Amp Mod3":               {"BYTE": 22, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
+            "Depth Amp Mod3":               {"BYTE": 22, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
             "Enable Amp Mod3":                 {"BYTE": 22, "SELF_MASK": 0x01, "SHFT_LEFT": 4, "DATA_MASK": 0xef},
-            "Depth Of Vib3":                      {"BYTE": 22, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
+            "Depth Vib3":                      {"BYTE": 22, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
             "Enable Vib3":                        {"BYTE": 22, "SELF_MASK": 0x01, "SHFT_LEFT": 0, "DATA_MASK": 0xfe},
 
             # [23]: OP3:Multi Control Magnification Frequency 1111 | Detune 0000
@@ -203,7 +204,7 @@ class ymf825pico_class:
             # [25]: OP4:Sustain Rate 1111 | Ignore Key Off 0 | Key Scale Sensitivity 111
             "Sus R4":                          {"BYTE": 25, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
             "Ign Key Off4":                        {"BYTE": 25, "SELF_MASK": 0x01, "SHFT_LEFT": 3, "DATA_MASK": 0xf7},
-            "Key Scale Sens4":                 {"BYTE": 25, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
+            "KeySc Sens4":                 {"BYTE": 25, "SELF_MASK": 0x07, "SHFT_LEFT": 0, "DATA_MASK": 0xf8},
 
             # [26]: OP4:Release Rate 1111 | Decay Rate 0000
             "Release R4":                          {"BYTE": 26, "SELF_MASK": 0x0f, "SHFT_LEFT": 4, "DATA_MASK": 0x0f},
@@ -218,9 +219,9 @@ class ymf825pico_class:
             "KSL Sens4":            {"BYTE": 28, "SELF_MASK": 0x03, "SHFT_LEFT": 0, "DATA_MASK": 0xfc},
 
             # [29]: OP4:Depth Of Amp Modulation 111 | Enable Amp Modulation 0 | Depth Of Vibrate 111 | Enable Vibrate 0
-            "Depth Of Amp Mod4":               {"BYTE": 29, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
+            "Depth Amp Mod4":               {"BYTE": 29, "SELF_MASK": 0x07, "SHFT_LEFT": 5, "DATA_MASK": 0x1f},
             "Enable Amp Mod4":                 {"BYTE": 29, "SELF_MASK": 0x01, "SHFT_LEFT": 4, "DATA_MASK": 0xef},
-            "Depth Of Vib4":                      {"BYTE": 29, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
+            "Depth Vib4":                      {"BYTE": 29, "SELF_MASK": 0x07, "SHFT_LEFT": 1, "DATA_MASK": 0xf1},
             "Enable Vib4":                        {"BYTE": 29, "SELF_MASK": 0x01, "SHFT_LEFT": 0, "DATA_MASK": 0xfe},
 
             # [30]: OP4:Multi Control Magnification Frequency 1111 | Detune 0000
@@ -265,10 +266,10 @@ class ymf825pico_class:
         self.synth_play_timbre = 0                          # Playing timbre index
         self.synth_timbre_names = ["NoName"] * self.TIMBRES # Timbre names list
         self.synth_timbres = [[                             # YMF825 voice number (from-to) and its tone index for each timbre [Timber List][Timber Postion][from to]
-                                {"voice_from":  0, "voice_to": 15, "databank": 0, "tone": 0, "volume": 31},
-                                {"voice_from": -1, "voice_to": -1, "databank": 0, "tone": 0, "volume":  0},
-                                {"voice_from": -1, "voice_to": -1, "databank": 0, "tone": 0, "volume":  0},
-                                {"voice_from": -1, "voice_to": -1, "databank": 0, "tone": 0, "volume":  0}
+                                {"voice_from":  0, "voice_to": 15, "databank": 0, "tone": 0, "volume": 31, "midi_ch": 1},
+                                {"voice_from": -1, "voice_to": -1, "databank": 0, "tone": 0, "volume":  0, "midi_ch": 2},
+                                {"voice_from": -1, "voice_to": -1, "databank": 0, "tone": 0, "volume":  0, "midi_ch": 3},
+                                {"voice_from": -1, "voice_to": -1, "databank": 0, "tone": 0, "volume":  0, "midi_ch": 4}
                              ]] * self.TIMBRES
 
         # Equalizer settings
@@ -718,6 +719,16 @@ class ymf825pico_class:
         return self.synth_timbres[timbre][portion]["volume"]
 
 
+    # Set timbre portion midi channel
+    def set_timbre_portion_midich( self, timbre, portion, midich ):
+        self.synth_timbres[timbre][portion]["midi_ch"] = midich
+
+
+    # Get timbre portion midi channel
+    def get_timbre_portion_midich( self, timbre, portion ):
+        return self.synth_timbres[timbre][portion]["midi_ch"]
+
+
     # Get timbre portion volume
     def get_playing_timbre_volume( self, portion ):
         return self.synth_timbres[self.synth_play_timbre][portion]["volume"]
@@ -726,6 +737,11 @@ class ymf825pico_class:
     # Set timbre portion volume
     def set_playing_timbre_volume( self, portion, volume ):
         self.synth_timbres[self.synth_play_timbre][portion]["volume"] = volume
+
+
+    # Get timbre portion midi channel
+    def get_playing_timbre_midich( self, portion ):
+        return self.synth_timbres[self.synth_play_timbre][portion]["midi_ch"]
 
 
     # Set equalizer
@@ -1378,38 +1394,7 @@ class ymf825pico_class:
         self.led_turn(False)
 
 
-    # Initialize application.
-    def init( self ):
-        print("Initialize Application.")
-#        GPIO.setmode( GPIO.BCM )
-
-
     # Turn the Synthsize on
     def turn_on_synthesizer( self ):
-        self.init()
+#        self.init()
         self.setup_hardware()
-
-
-    # Play demo
-    def play_demo( self ):
-        print("YMF825pico Opeing Melody.")
-        self.set_synth_play_timbre( 1 )
-        self.set_timbre_tones( 1 )
-
-        self.play_by_timbre_scale(0,"C4")
-        self.delay(500)
-        self.stop_by_timbre_scale(0,"C4")
-        self.delay(500)
-        self.play_by_timbre_scale(0,"E4")
-        self.delay(500)
-        self.stop_by_timbre_scale(0,"E4")
-        self.delay(500)
-        self.play_by_timbre_scale(0,"G4")
-        self.delay(500)
-        self.stop_by_timbre_scale(0,"G4")
-        self.delay(500)
-        self.play_by_timbre_scale(0,"C5")
-        self.delay(500)
-        self.stop_by_timbre_scale(0,"C5")
-        self.delay(1000)
-
