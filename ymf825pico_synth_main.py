@@ -42,6 +42,7 @@
 #   01.300 2023/09/19: Tones in the timbre can be selected from the other databank
 #   01.400 2023/09/21: Bi quad filter parameters calculation (LPF, HPF, BPFskt, BPF0db, NOTCH, APF, PEAK)
 #   01.500 2023/09/21: MIDI channel can be assigned to each timbre portion
+#   01.501 2023/09/22: Ignore Realtime Clock (0xF8) and Active Sensing (0xFE) in MIDI message (too much!!)
 #############################################################################
 
 from ymf825pico import ymf825pico_class
@@ -1958,47 +1959,36 @@ def midi_interface(midi_events, length):
         midi_cmd  = midi_events[bt]
         bt += 1
         left = length - bt
+        if left >= 2:
+            # MIDI note
+            midi_note = midi_events[bt]
+            # MIDI velocity
+            midi_velo = midi_events[bt + 1]
+            bt += 2
 
-        # note on: 0x9n (n=0..f: MIDI CH)
-        if (midi_cmd & 0xf0) == 0x90:
-            if left >= 2:
+            # note on: 0x9n (n=0..f: MIDI CH)
+            if (midi_cmd & 0xf0) == 0x90:
                 ch = "CH" + str(midi_cmd - 0x90 + 1)
                 if ch in midich:
-                    # MIDI note
-                    midi_note = midi_events[bt]
-                    # MIDI velocity
-                    midi_velo = midi_events[bt + 1]
-
                     for portion in midich[ch]:
-                        YMF825pico.play_by_timbre_note((portion + timbre_offset) % YMF825pico.TIMBRE_PORTIONS, midi_note, midi_velo)
+                        # note off
+                        if midi_velo == 0:
+                            YMF825pico.stop_by_timbre_note((portion + timbre_offset) % YMF825pico.TIMBRE_PORTIONS, midi_note)
+                        # note on
+                        else:
+                            YMF825pico.play_by_timbre_note((portion + timbre_offset) % YMF825pico.TIMBRE_PORTIONS, midi_note, midi_velo)
 
-                bt += 2
-
-        # note off: 0x8n (n=0..f: MIDI CH)
-        elif (midi_cmd & 0xf0) == 0x80:
-            if left >= 2:
+            # note off: 0x8n (n=0..f: MIDI CH)
+            elif (midi_cmd & 0xf0) == 0x80:
                 ch = "CH" + str(midi_cmd - 0x80 + 1)
                 if ch in midich:
-                    # MIDI note
-                    midi_note = midi_events[bt]
-                    # MIDI velocity
-                    midi_velo = midi_events[bt + 1]
-
                     for portion in midich[ch]:
                         YMF825pico.stop_by_timbre_note((portion + timbre_offset) % YMF825pico.TIMBRE_PORTIONS, midi_note)
-
-                bt += 2
-    
-        # Control
-        elif (midi_cmd & 0xf0) == 0xb0:
-            if left >= 2:
+        
+            # Control
+            elif (midi_cmd & 0xf0) == 0xb0:
                 # Chanel -> Timbre
                 timbre = (midi_cmd - 0xb0 + timbre_offset) % YMF825pico.TIMBRE_PORTIONS
-                # MIDI note
-                midi_note = midi_events[bt]
-                # MIDI velocity
-                midi_velo = midi_events[bt + 1]
-                bt += 2
                 
                 # sustain: pressed:[2]==0x7f / released [2]==0
                 if midi_note == 0x40:
@@ -2008,15 +1998,9 @@ def midi_interface(midi_events, length):
                 elif midi_note == 0x01:
                     timbre_offset = 0
 #                    print("MIDI: Modulation")
-    
-        elif (midi_cmd & 0xf0) == 0xe0:
-            if left >= 2:
-                # MIDI note
-                midi_note = midi_events[bt]
-                # MIDI velocity
-                midi_velo = midi_events[bt + 1]
-                bt += 2
 
+            # Pitch --> Timbre shift
+            elif (midi_cmd & 0xf0) == 0xe0:
                 # pitch+ --> timbre+
                 if midi_note == 0x47:
                     timbre_offset = (timbre_offset + 1) % YMF825pico.TIMBRE_PORTIONS
@@ -2093,7 +2077,6 @@ if __name__=='__main__':
     show_menu(0)
 
     # UART
-    recv = 0
     uart_read = True
 
     while True:
@@ -2101,11 +2084,18 @@ if __name__=='__main__':
         length = uart.any()
         if length > 0:
             read_bytes = uart.read(length)
-#            print("UART:[", recv, ":", length, "]=", read_bytes)
+            uart_read = True
+
+#            print("UART:[", length, "]=", read_bytes)
 #            for bt in read_bytes:
 #                print("data=", hex(bt))
-            uart_read = True
-            midi_interface(read_bytes, length)
+            
+            # MIDI command
+            midi_cmd = read_bytes[0] & 0xf0
+            
+            # Ignore MIDI real time clock and active sensing (too many data!!)
+            if midi_cmd == 0x90 or midi_cmd == 0x80 or midi_cmd == 0xb0 or midi_cmd == 0xe0:
+                midi_interface(read_bytes, length)
 
         elif uart_read:
 #            print("UART: waiting...")
