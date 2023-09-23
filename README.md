@@ -17,14 +17,13 @@ YMF825 FM synthesizer controlled with Raspberry Pi PICO.
 - Play your MIDI instrument.
 
 ## Specifications:
-- 7 algorithms and 4 operators FM synthesizer.
+- FM synthesizer with 7 algorithms and 4 operators (A, B, C, D).
 - 29 wave forms each operator.
-- 16 voices.
-- 3 bands equalizer (Biquad Filters). 
-- Multi Timbre.
-    A timbre consists of 4 tones (0..3)
-    ((MIDI CH - 1) % 4) corresponds to a tone number to play (MIDI CH=1..16).
-- You can save 10 databanks in PICO, each databank has 20 timbre sets, 20 tones and 10 equalizers.
+- 16 voices.  Each voice can have different tone.
+- Multi Timbre. A timbre consists of 4 portions (0..3) with each tone.
+- Each portion in a timbre has a MIDI channel to play with both note on and off.
+- 3 layers biquad filters are placed following the sound output. 
+- You can save 10 databanks each bank contains 20 Timbre sets, 20 Tones and 10 Equalizers in PICO.
 
 ## MIDI Events
 - Note on event with verosity.
@@ -32,9 +31,9 @@ YMF825 FM synthesizer controlled with Raspberry Pi PICO.
 - Pitch+ event increments the Base Tone Number (BTN).
 - Pitch- event decrements the Base Tone Number (BTN).
 - Modulation event resets the BTN to zero (default).
-    Therefore ((MIDI CH - 1 + BTN) % 4) corresponds to a tone number to play.
+    Therefore ((MIDI CH - 1 + BTN) % 4) corresponds to a portion number to play.
     YMF825 chip does not support both pitch bend and modulation,
-    so YMF825pico assigns original functions to these events.
+    so YMF825pico assigns the original functions to these events.
 
 ## Interfaces
 - An OLED display and 4 rotary encoders for UI to control the synthesizer. 

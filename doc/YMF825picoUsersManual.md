@@ -5,7 +5,8 @@
 - 16 voices.  Each voice can have different tone.
 - Multi Timbre. A timbre consists of 4 portions (0..3) with each tone.
 - Each portion in a timbre has a MIDI channel to play with both note on and off.
-- You can save 10 Timbre sets and 20 tones in PICO.
+- 3 layers biquad filters are placed following the sound output. 
+- You can save 10 databanks each bank contains 20 Timbre sets, 20 Tones and 10 Equalizers in PICO.
 
     MIDI CHa ---> TIMBREx-PORTION0 ---> DATABANK0..9:TONE0..19 ---> VOICES0..15 / VOLUME0..31
 
@@ -14,8 +15,7 @@
     MIDI CHc ---> TIMBREx-PORTION2 ---> DATABANK0..9:TONE0..19 ---> VOICES0..15 / VOLUME0..31
 
     MIDI CHd ---> TIMBREx-PORTION3 ---> DATABANK0..9:TONE0..19 ---> VOICES0..15 / VOLUME0..31
-- 3 layers biquad filters are placed following the sound output. 
-- 10 databanks in PICO, each databank has 20 timbre sets, 20 tones and 10 equalizers.
+
 
 | BLOCK:     | DATABANK  | TIMBRE  | PORTION  | MIDI CH   | VOICE        | DATABANK:TONE  | EQUALIZER  |
 |----------- | --------- | ------- | -------- | --------- | ------------ | ----- | ---------- |
@@ -36,7 +36,7 @@
 - Pitch- event decrements the Base Tone Number (BTN).
 - Modulation event resets the BTN to zero (default).
 
-  Therefore (MIDI Channel + BTN + 1) % 4 corresponds to a tone number to play. YMF825 chip does not support both pitch bend and modulation, so YMF825pico assigns original functions to these events.
+  Therefore (MIDI Channel + BTN + 1) % 4 corresponds to a portion number to play. YMF825 chip does not support both pitch bend and modulation, so YMF825pico assigns the original functions to these events.
 
 ## Interfaces
 - An OLED display and 4 rotary encoders for UI to control the synthesizer.

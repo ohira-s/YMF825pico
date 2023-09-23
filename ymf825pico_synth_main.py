@@ -43,6 +43,7 @@
 #   01.400 2023/09/21: Bi quad filter parameters calculation (LPF, HPF, BPFskt, BPF0db, NOTCH, APF, PEAK)
 #   01.500 2023/09/21: MIDI channel can be assigned to each timbre portion
 #   01.501 2023/09/22: Ignore Realtime Clock (0xF8) and Active Sensing (0xFE) in MIDI message (too much!!)
+#   01.502 2023/09/23: Waiting for receiving parfect MIDI messages via UART to never lost MIDI message
 #############################################################################
 
 from ymf825pico import ymf825pico_class
@@ -1951,7 +1952,7 @@ def midi_interface(midi_events, length):
             midich[ch].append(p)
         else:
             midich[ch] = [p]
-#    print("MIDI CH=", midich)
+#    print("MIDI CH, length, events=", midich, length, midi_events)
 
     bt = 0
     while bt < length:
@@ -1959,6 +1960,7 @@ def midi_interface(midi_events, length):
         midi_cmd  = midi_events[bt]
         bt += 1
         left = length - bt
+#        print("MIDI CMD, left=", midi_cmd, left)
         if left >= 2:
             # MIDI note
             midi_note = midi_events[bt]
@@ -1969,6 +1971,7 @@ def midi_interface(midi_events, length):
             # note on: 0x9n (n=0..f: MIDI CH)
             if (midi_cmd & 0xf0) == 0x90:
                 ch = "CH" + str(midi_cmd - 0x90 + 1)
+#                print("note on :", ch, midi_note, midi_velo)
                 if ch in midich:
                     for portion in midich[ch]:
                         # note off
@@ -1981,6 +1984,7 @@ def midi_interface(midi_events, length):
             # note off: 0x8n (n=0..f: MIDI CH)
             elif (midi_cmd & 0xf0) == 0x80:
                 ch = "CH" + str(midi_cmd - 0x80 + 1)
+#                print("note off:", ch, midi_note, midi_velo)
                 if ch in midich:
                     for portion in midich[ch]:
                         YMF825pico.stop_by_timbre_note((portion + timbre_offset) % YMF825pico.TIMBRE_PORTIONS, midi_note)
@@ -2059,6 +2063,7 @@ if __name__=='__main__':
     machine.freq(240000000)
 
     # UART
+#    uart = UART(UART_CH, baudrate=UART_BAUDRATE, tx=Pin(UART_TX), rx=Pin(UART_RX), bits=8, parity=None, stop=1, rxbuf=512)
     uart = UART(UART_CH, baudrate=UART_BAUDRATE, tx=Pin(UART_TX), rx=Pin(UART_RX), bits=8, parity=None, stop=1)
 
     # YMF825
@@ -2077,31 +2082,41 @@ if __name__=='__main__':
     show_menu(0)
 
     # UART
-    uart_read = True
-
+#    uart_read = True
+    cmd_data = 0
+    read_bytes = []
     while True:
         # MIDI keyboard UART receive
         length = uart.any()
         if length > 0:
-            read_bytes = uart.read(length)
-            uart_read = True
+            read_byte = uart.read(1)
+#            uart_read = True
 
+            # MIDI envets for YMF825pico
+            midi_cmd = read_byte[0] & 0xf0
+            if midi_cmd == 0x90 or midi_cmd == 0x80 or midi_cmd == 0xb0 or midi_cmd == 0xe0:
+                cmd_data = 2
+                read_bytes.append(read_byte[0])
+            elif cmd_data > 0:
+                read_bytes.append(read_byte[0])
+                cmd_data -= 1
+
+        elif cmd_data == 0 and len(read_bytes) > 0:
 #            print("UART:[", length, "]=", read_bytes)
 #            for bt in read_bytes:
 #                print("data=", hex(bt))
-            
-            # MIDI command
-            midi_cmd = read_bytes[0] & 0xf0
-            
+
             # Ignore MIDI real time clock and active sensing (too many data!!)
-            if midi_cmd == 0x90 or midi_cmd == 0x80 or midi_cmd == 0xb0 or midi_cmd == 0xe0:
-                midi_interface(read_bytes, length)
+#            uart_read = False
+            midi_interface(read_bytes, len(read_bytes))
+            del read_bytes
+            read_bytes = []
 
-        elif uart_read:
-#            print("UART: waiting...")
-            uart_read = False
+#        elif cmd_data > 0:
+#            print("WAITING FOR PARAMETERS:", cmd_data)
 
-        if not uart_read:
+#        if not uart_read:
+        if cmd_data == 0:
             # Get rotary encoders
             get_rotary_encoders()
 
