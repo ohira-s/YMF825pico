@@ -530,10 +530,12 @@ An OLED display shows you the menus and the values.  THe layout is as below.
         | EQ3 B2       | -2.0 .. 2.0     | 3rd biquad filter parameter b2. |
         | EQ3 A1       | -2.0 .. 2.0     | 3rd biquad filter parameter a1. |
         | EQ3 A2       | -2.0 .. 2.0     | 3rd biquad filter parameter a2. |
+        | LISTEN       | NO              | Nothing happens. |
+        |              | PLAY            | Play a sample sound with the current equalizer settings. |
         | SAVE         | NO              | Nothing happens. |
         |              | SURE?           | Nothing happens. |
         |              | YES             | Save as new name. |
-        | CANCEL       | NO              | Nothing happens. |
+        | CANCEL       | NO              | Nothing happenSs. |
         |              | SURE?           | Nothing happens. |
         |              | YES             | Cancel the changes. |
         | RESET        | NO              | Nothing happens. |

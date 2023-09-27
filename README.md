@@ -42,3 +42,6 @@ YMF825 FM synthesizer controlled with Raspberry Pi PICO.
     
 ## YMF825 Sound Editor:
 - [User's Manual](https://github.com/ohira-s/YMF825pico/blob/master/doc/YMF825picoUsersManual.md)
+- [Web Site（日本語）](https://www.thymes-square.net/?p=41)
+
+  The web site is written in Japanese, and access to the site might be limited from Japan for security problems.  Sorry for inconvenience.
